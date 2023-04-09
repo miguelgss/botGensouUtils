@@ -10,17 +10,18 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='$', intents=intents)
 async def send_message(message, user_message):
     try:
+        color=0xE0383C
         response = responses.handle_response(message, user_message)
         if(type(response) is str):
             await message.channel.send(
                 embed=discord.Embed(title=user_message,
                 description=response,
-                color=0xFF5733)
+                color=color)
                 )
         elif(user_message[0] == '{'): await message.channel.send(
                 embed=discord.Embed(title=user_message,
                 description="Comando não reconhecido. Use 'h' ou 'help' para verificar os comandos disponíveis.",
-                color=0xFF5733)
+                color=color)
                 )
     except Exception as e:
         print(e)

@@ -2,14 +2,14 @@ import re
 import commands
 
 ajudaList = [
-        "help/h - Mostra os comandos do bot;"
-        "lista/l - Mostra a lista atual;",
-        "adiciona/add/a - Recebe um ou mais argumentos para adicionar alguém a lista;",
-        "adicioneMe/addme/am - Adiciona quem mandou a mensagem para a lista"
-        "remover/r - Recebe um ou mais argumentos para remover alguém da lista;",
-        "removerme/rme - Remove quem mandou a mensagem da lista",
-        "embaralhar/e - Move o último para a primeira posição e então embaralha a lista;",
-        "reembaralhar/re - Reembaralha todos da lista exceto o primeiro;"
+        "**help/h** - Mostra os comandos do bot;",
+        "**lista/l** - Mostra a lista atual;",
+        "**adiciona/add/a** - Recebe um ou mais argumentos para adicionar alguém a lista;",
+        "**adicioneMe/addme/am** - Adiciona quem mandou a mensagem para a lista;",
+        "**remover/r** - Recebe um ou mais argumentos para remover alguém da lista;",
+        "**removerme/rme** - Remove quem mandou a mensagem da lista;",
+        "**embaralhar/e** - Move o último para a primeira posição e então embaralha a lista;",
+        "**reembaralhar/re** - Reembaralha todos da lista exceto o primeiro;"
         ]
 
 def handle_response(messageObj, message) -> str:
@@ -47,6 +47,7 @@ def handle_response(messageObj, message) -> str:
         if txt_splitted[0] == 'help' or txt_splitted[0] == 'h':
             ajudaRetorno = "Comandos: \n"
             for text in ajudaList:
-                ajudaRetorno += text + "\n"
+                ajudaRetorno += "> " + text
+                ajudaRetorno += "\n\n"
             return ajudaRetorno
     

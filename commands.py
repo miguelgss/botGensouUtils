@@ -6,8 +6,10 @@ segundaList = []
 def showList() -> str:
     textoLista = "LISTA 1: \n"
 
+    posCount = 1
     for name in list:
-        textoLista += name + "; \n"
+        textoLista += str(posCount) + " - " + name + "; \n"
+        posCount += 1
 
     if (len(segundaList) > 0):
         textoLista += "LISTA 2: \n"
