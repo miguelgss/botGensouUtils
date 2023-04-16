@@ -7,7 +7,8 @@ import responses
 intents =  discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='$', intents=intents)
+bot = commands.Bot(command_prefix='&', intents=intents)
+
 async def send_message(message, user_message):
     try:
         color=0xE0383C
@@ -17,18 +18,19 @@ async def send_message(message, user_message):
                 embed=discord.Embed(title=user_message,
                 description=response,
                 color=color)
-                )
-        elif(user_message[0] == '{'): await message.channel.send(
+            )
+        elif(user_message[0] == '{'): 
+            await message.channel.send(
                 embed=discord.Embed(title=user_message,
                 description="Comando não reconhecido. Use 'h' ou 'help' para verificar os comandos disponíveis.",
                 color=color)
-                )
+            )
     except Exception as e:
         print(e)
 
 def run_discord_bot():
     TOKEN = ''
-    with open('token.txt') as f:
+    with open('config.txt') as f:
         for line in f:
             if re.search("token", line):
                 print(line.split(' '))
@@ -45,11 +47,11 @@ def run_discord_bot():
         if message.author == client.user:
             return
         
-        username = str(message.author)
+        # username = str(message.author)
         user_message = str(message.content)
-        channel = str(message.channel)
+        # channel = str(message.channel)
 
-        print(f"{username} said: '{user_message}' ({channel})")
+        # print(f"{username} said: '{user_message}' ({channel})")
 
         await send_message(message, user_message)
 

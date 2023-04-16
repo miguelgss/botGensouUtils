@@ -1,53 +1,76 @@
 import re
 import commands
-
-ajudaList = [
-        "**help/h** - Mostra os comandos do bot;",
-        "**lista/l** - Mostra a lista atual;",
-        "**adiciona/add/a** - Recebe um ou mais argumentos para adicionar alguém a lista;",
-        "**adicioneMe/addme/am** - Adiciona quem mandou a mensagem para a lista;",
-        "**remover/r** - Recebe um ou mais argumentos para remover alguém da lista;",
-        "**removerme/rme** - Remove quem mandou a mensagem da lista;",
-        "**embaralhar/e** - Move o último para a primeira posição e então embaralha a lista;",
-        "**reembaralhar/re** - Reembaralha todos da lista exceto o primeiro;"
-        ]
+import commandNames as cn
 
 def handle_response(messageObj, message) -> str:
     # Remove espaços extras
     txt_command = re.sub(' +', ' ', message[1:])
     txt_splitted = txt_command.split(' ')
-    txt_splitted[0] = txt_splitted[0].lower()
+    userInput = txt_splitted[0].lower()
     prefix = message[0]
 
+    hasPermission = checkRoles(messageObj.author.roles, getValidRoles())
     if prefix == '{':
-
-        if txt_splitted[0] == 'lista' or txt_splitted[0] == 'l':
-            return commands.showList()
-
-        if txt_splitted[0] == 'adiciona' or txt_splitted[0] == 'add' or txt_splitted[0] == 'a':
+        if checkCommand(userInput, cn.adiciona, hasPermission):
             return commands.addToList(txt_splitted[1:])
-        
-        if txt_splitted[0] == 'adicioneme' or txt_splitted[0] == 'addme' or txt_splitted[0] == 'am':
-            return commands.addToList( [str(messageObj.author.name)] )
 
-        if txt_splitted[0] == 'remover' or txt_splitted[0] == 'r':
-            retorno = commands.removeFromList(txt_splitted[1:])
-            return retorno
-        
-        if txt_splitted[0] == 'removerme' or txt_splitted[0] == 'rme':
-            retorno = commands.removeFromList( [str(messageObj.author.name)] )
-            return retorno
+        if checkCommand(userInput, cn.remove, hasPermission):
+            return commands.removeFromList(txt_splitted[1:])
 
-        if txt_splitted[0] == 'embaralhar' or txt_splitted[0] == 'e':
+        if checkCommand(userInput, cn.embaralha, hasPermission):
             return commands.qbgShuffleList(-1)
         
-        if txt_splitted[0] == 'reembaralhar' or txt_splitted[0] == 're':
+        if checkCommand(userInput, cn.reembaralha, hasPermission):
             return commands.qbgShuffleList(0)
 
-        if txt_splitted[0] == 'help' or txt_splitted[0] == 'h':
+        if checkCommand(userInput, cn.move, hasPermission):
+            return commands.swapPositionFromList(int(txt_splitted[1]), int(txt_splitted[2]))
+
+        if checkCommand(userInput, cn.lista):
+            return commands.showList()
+            
+        if checkCommand(userInput, cn.adicioname):
+            return commands.addToList( [str(messageObj.author.name)])
+
+        if checkCommand(userInput, cn.removeme):
+            return commands.removeFromList( [str(messageObj.author.name)] )
+
+        if checkCommand(userInput, cn.ajuda):
             ajudaRetorno = "Comandos: \n"
-            for text in ajudaList:
+            for text in cn.ajudaList:
                 ajudaRetorno += "> " + text
-                ajudaRetorno += "\n\n"
+                ajudaRetorno += "\n"
             return ajudaRetorno
+
+def checkCommand(userInput, commandName, hasPermission = True) -> bool:
+    if(hasPermission):
+        for command in commandName:
+            if(userInput == command):
+                return True
+    return False
+
+## Métodos de verificação
+
+def checkRoles(userRoles, validRoles) -> bool:
+    if(len(validRoles) == 0):
+        return True
+    for user in userRoles:
+        for valid in validRoles:
+            if(re.search(str(user).lower(),str(valid).lower())):
+                return True
+    return False
+
+def getValidRoles():
+    listRoles = []
+    retornoList = []
+
+    with open('config.txt') as f:   
+        for line in f:
+            if re.search("roles", line):
+                listRoles = line.split("=")
+                listRoles.pop(0)
+                for i in listRoles:
+                    j = i.split(',')
+                    retornoList = j
     
+    return retornoList
