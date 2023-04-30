@@ -13,9 +13,6 @@ def showList() -> str:
             textoLista += str(posCount) + " - " + name + "; \n"
             posCount += 1
 
-    if(len(groupList[0]) < 1):
-        textoLista += "Não há nomes na lista por enquanto. Use o comando 'adiciona' ou 'adicioname' para começar a lista!"
-    
     return textoLista
 
 # Criação, separação e exclusão de listas
@@ -70,7 +67,7 @@ def removeList(listIndex):
         msgLista = "**_Backup listas passadas: _** \n" + showList()
         groupList.pop(listIndex)
 
-        manageListTxtFile()
+        manageDeletedListTxtFile(listIndex)
         return msgLista
     except Exception as e:
         return "Erro: " + str(e)
@@ -183,5 +180,16 @@ def swapPositionFromList(positions):
 
 # Criação de arquivo com a lista
 def manageListTxtFile():
-    with open('listOBS.txt', 'w') as file:
-        file.write(showList())
+    for index, lista in enumerate(groupList):
+        textoLista = ''
+        textoLista += "Lista " + str(index+1) + ": \n"
+        posCount = 1
+        for name in lista:
+            textoLista += str(posCount) + " - " + name + "; \n"
+            posCount += 1
+        with open('listOBS' + str(index+1) + '.txt', 'w') as file:
+            file.write(textoLista)
+
+def manageDeletedListTxtFile(removedIndex):
+    with open('listOBS' + str(removedIndex+1) + '.txt', 'w') as file:
+        file.write(' ')
