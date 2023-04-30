@@ -13,9 +13,15 @@ def handle_response(messageObj, message) -> str:
     if prefix == '{':
         if checkCommand(userInput, cn.adiciona, hasPermission):
             return commands.addToList(txt_splitted[1:])
+        
+        if checkCommand(userInput, cn.adicionalista, hasPermission):
+            return commands.appendNewList(txt_splitted[1:])
 
         if checkCommand(userInput, cn.remove, hasPermission):
             return commands.removeFromList(txt_splitted[1:])
+
+        if checkCommand(userInput, cn.removelista, hasPermission):
+            return commands.removeList(int(txt_splitted[1]))
 
         if checkCommand(userInput, cn.embaralha, hasPermission):
             return commands.qbgShuffleList(-1)
@@ -23,8 +29,17 @@ def handle_response(messageObj, message) -> str:
         if checkCommand(userInput, cn.reembaralha, hasPermission):
             return commands.qbgShuffleList(0)
 
+        if checkCommand(userInput, cn.separar, hasPermission):
+            if (len(txt_splitted) > 1):
+                return commands.splitList(int(txt_splitted[1]))
+            else:
+                return commands.splitList()
+        
         if checkCommand(userInput, cn.move, hasPermission):
-            return commands.swapPositionFromList(int(txt_splitted[1]), int(txt_splitted[2]))
+            return commands.movePositionFromList(txt_splitted[1:])
+
+        if checkCommand(userInput, cn.trocar, hasPermission):
+            return commands.swapPositionFromList(txt_splitted[1:])
 
         if checkCommand(userInput, cn.lista):
             return commands.showList()
