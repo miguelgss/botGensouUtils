@@ -29,6 +29,9 @@ def handle_response(messageObj, message) -> str:
         if checkCommand(userInput, cn.reembaralha, hasPermission):
             return commands.qbgShuffleList(0)
 
+        if checkCommand(userInput, cn.embaralhatodos, hasPermission):
+            return commands.qbgShuffleList(2)
+
         if checkCommand(userInput, cn.separar, hasPermission):
             if (len(txt_splitted) > 1):
                 return commands.splitList(int(txt_splitted[1]))

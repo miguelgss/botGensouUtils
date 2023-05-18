@@ -64,11 +64,17 @@ def splitList(listIndex = 1):
 def removeList(listIndex):
     listIndex -= 1
     try:
-        msgLista = "**_Backup listas passadas: _** \n" + showList()
-        groupList.pop(listIndex)
+        if(len(groupList) > 1):
+            msgLista = "**_Backup listas passadas: _** \n" + showList()
+            listCopy = groupList[listIndex].copy()
+            groupList.pop(listIndex)
 
-        manageDeletedListTxtFile(listIndex)
-        return msgLista
+            addToList(listCopy)
+
+            manageDeletedListTxtFile(listIndex)
+            return msgLista
+        else:
+            raise Exception("Não é possível apagar uma lista quando há apenas uma!")
     except Exception as e:
         return "Erro: " + str(e)
 
@@ -105,18 +111,33 @@ def addToList(names):
 
 def qbgShuffleList(shuffleOrReShuffle):
     try:
-        for index, lista in enumerate(groupList):
-            newlist = [lista[shuffleOrReShuffle]]
-            lista.remove(lista[shuffleOrReShuffle])
+        if(shuffleOrReShuffle == -1 or shuffleOrReShuffle == 0):
+            for index, lista in enumerate(groupList):
+                newlist = [lista[shuffleOrReShuffle]]
+                lista.remove(lista[shuffleOrReShuffle])
 
-            if(len(lista) > 1):
-                random.shuffle(lista)
-            
-            for element in lista:
-                newlist.append(element)
-            
-            groupList[index] = newlist.copy()
-            
+                if(len(lista) > 1):
+                    random.shuffle(lista)
+                
+                for element in lista:
+                    newlist.append(element)
+                
+                groupList[index] = newlist.copy()
+        else:
+            allListNames = []
+            numLists = len(groupList)
+            for index, lista in enumerate(groupList):
+                for element in lista:
+                    allListNames.append(element)
+            for name in allListNames:
+                for lista in groupList:
+                    try:
+                        lista.remove(name)
+                    except Exception as e:
+                        continue
+            random.shuffle(allListNames)
+            addToList(allListNames)
+
         manageListTxtFile()
         return showList()
     except Exception as e:
