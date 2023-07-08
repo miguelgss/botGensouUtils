@@ -1,17 +1,41 @@
 import random
 
+#region Mensagens
+MsgListaBloqueada = '🔒 Lista(s) bloqueada(s)!'
+MsgListaDesbloqueada = '🔓 Lista(s) desbloqueada(s)!'
+#endregion
+
+isGroupListLocked = False
 groupList = [[]]
+waitList = []
+
+def getIsGroupListLocked():
+    return isGroupListLocked
+
+def toggleListStatus():
+    global isGroupListLocked
+    isGroupListLocked = not isGroupListLocked
+    if (not isGroupListLocked):
+        global waitList
+        addToList(waitList)
+        waitList = []
+    return MsgListaBloqueada if isGroupListLocked else MsgListaDesbloqueada
 
 def showList() -> str:
-    textoLista = ''
+    textoLista = MsgListaBloqueada + '\n\n' if isGroupListLocked else ''
     if(len(groupList) < 1):
         return "Não existem listas no momento. Por favor, utilize o comando 'adiciona' ou 'adicionalista' para gerar uma nova lista."
     for index, lista in enumerate(groupList):
-        textoLista += "Lista " + str(index+1) + ": \n"
+        textoLista += "📜 Lista " + str(index+1) + ": \n"
         posCount = 1
         for name in lista:
             textoLista += str(posCount) + " - " + name + "; \n"
             posCount += 1
+    
+    if isGroupListLocked:
+        textoLista += "\n🕒 Lista de Espera: \n"
+        for name in waitList:
+            textoLista += name + "; \n"
 
     return textoLista
 
@@ -82,35 +106,61 @@ def removeList(listIndex):
 def addToList(names):
     msgsLista = ''
     try:
-        if(len(groupList) < 1):
-            return appendNewList(names)
-        for name in names:
-            countNamesList = []
-            jaEstaNaLista = False
-            indexLista = 0
-            for index, lista in enumerate(groupList):
-                
-                listLower = map(str.lower, lista)
+        if(isGroupListLocked):
+            for name in names:
+                jaEstaNaLista = False
+                jaEstaNaListaEspera = False
+                indexLista = 0
+                for index, lista in enumerate(groupList):
+                    
+                    listLower = map(str.lower, lista)
 
-                if name.lower() in listLower:
-                    jaEstaNaLista = True
-                    indexLista = index
-                countNamesList.append(len(lista))
+                    if name.lower() in listLower:
+                        jaEstaNaLista = True
+                        indexLista = index
+                
+                waitListLower = map(str.lower, waitList)
+                if name.lower() in waitListLower:
+                    jaEstaNaListaEspera = True
+                
+                if(jaEstaNaLista):
+                    msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
+                elif(jaEstaNaListaEspera):
+                    msgsLista += name + " já está na lista de espera! \n"
+                else:
+                    waitList.append(name)
+                    msgsLista += name + " foi adicionado a lista de espera! \n"
+        else:
+            if(len(groupList) < 1):
+                return appendNewList(names)
+            for name in names:
+                countNamesList = []
+                jaEstaNaLista = False
+                indexLista = 0
+                for index, lista in enumerate(groupList):
+                    
+                    listLower = map(str.lower, lista)
+
+                    if name.lower() in listLower:
+                        jaEstaNaLista = True
+                        indexLista = index
+                    countNamesList.append(len(lista))
+                
+                if(jaEstaNaLista):
+                    msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
+                else:
+                    groupList[countNamesList.index(min(countNamesList))].append(name)
+                    msgsLista += name + " foi adicionado a lista! \n" 
             
-            if(jaEstaNaLista):
-                msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
-            else:
-                groupList[countNamesList.index(min(countNamesList))].append(name)
-                msgsLista += name + " foi adicionado a lista! \n" 
-        
-        manageListTxtFile()
+            manageListTxtFile()
         return msgsLista
     except Exception as e:
         return "Erro: " + str(e)
-    
 
 def qbgShuffleList(shuffleOrReShuffle):
     try:
+        if(isGroupListLocked):
+            toggleListStatus()
         if(shuffleOrReShuffle == -1 or shuffleOrReShuffle == 0):
             for index, lista in enumerate(groupList):
                 newlist = [lista[shuffleOrReShuffle]]
@@ -147,12 +197,20 @@ def removeFromList(names):
     try:
         msgsLista = ""
         for name in names:
+            # Remove o nome caso esteja preente em alguma das listas
             for lista in groupList:
                 try:
                     lista.remove(name)
                     msgsLista += name + " foi removido! \n"
                 except Exception as e:
                     continue
+            
+            # Remove nome da waitList
+            try:
+                waitList.remove(name)
+                msgsLista += name + " foi removido! \n"
+            except Exception as e:
+                continue
 
         manageListTxtFile()
         return msgsLista
@@ -208,9 +266,9 @@ def manageListTxtFile():
         for name in lista:
             textoLista += str(posCount) + " - " + name + "; \n"
             posCount += 1
-        with open('listOBS' + str(index+1) + '.txt', 'w') as file:
+        with open('listOBS' + str(index+1) + '.txt', 'w', encoding="utf-8") as file:
             file.write(textoLista)
 
 def manageDeletedListTxtFile(removedIndex):
-    with open('listOBS' + str(removedIndex+1) + '.txt', 'w') as file:
+    with open('listOBS' + str(removedIndex+1) + '.txt', 'w', encoding="utf-8") as file:
         file.write(' ')

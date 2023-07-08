@@ -10,7 +10,11 @@ def handle_response(messageObj, message) -> str:
     prefix = message[0]
 
     hasPermission = checkRoles(messageObj.author.roles, getValidRoles())
+
     if prefix == '{':
+        if checkCommand(userInput, cn.bloquear, hasPermission):
+            return commands.toggleListStatus()
+
         if checkCommand(userInput, cn.adiciona, hasPermission):
             return commands.addToList(txt_splitted[1:])
         
