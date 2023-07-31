@@ -1,98 +1,59 @@
 import re
 import commands
-import commandNames as cn
+from classes.filasMantenedor import FilasMantenedor
 
-def handle_response(messageObj, message) -> str:
-    # Remove espaços extras
-    txt_command = re.sub(' +', ' ', message[1:])
-    txt_splitted = txt_command.split(' ')
-    userInput = txt_splitted[0].lower()
-    prefix = message[0]
+class Responses():
+    def __init__(self):
+        self.Filas = FilasMantenedor
 
-    hasPermission = checkRoles(messageObj.author.roles, getValidRoles())
+    def handle_response_msg(self, message) -> str:
+        txt_command = re.sub(' +', ' ', message[1:])
+        userArgs = txt_command.split(' ')
+        return userArgs[1:]
 
-    if prefix == '{':
-        if checkCommand(userInput, cn.bloquear, hasPermission):
-            return commands.toggleListStatus()
+    def showListFormatted(self):
+        return commands.showList(self.Filas.groupList, self.Filas.isGroupListLocked, self.Filas.waitList)
 
-        if checkCommand(userInput, cn.adiciona, hasPermission):
-            return commands.addToList(txt_splitted[1:])
-        
-        if checkCommand(userInput, cn.adicionalista, hasPermission):
-            return commands.appendNewList(txt_splitted[1:])
+    def addAuthorToList(self, ctx):
+        return commands.addToList(self.Filas, [ctx.message.author.name])
 
-        if checkCommand(userInput, cn.remove, hasPermission):
-            return commands.removeFromList(txt_splitted[1:])
+    def addNamesToList(self, ctx):
+        return commands.addToList(self.Filas, self.handle_response_msg(ctx.message.content))    
 
-        if checkCommand(userInput, cn.removelista, hasPermission):
-            return commands.removeList(int(txt_splitted[1]))
-
-        if checkCommand(userInput, cn.embaralha, hasPermission):
-            return commands.qbgShuffleList(-1)
-        
-        if checkCommand(userInput, cn.reembaralha, hasPermission):
-            return commands.qbgShuffleList(0)
-
-        if checkCommand(userInput, cn.embaralhatodos, hasPermission):
-            return commands.qbgShuffleList(2)
-
-        if checkCommand(userInput, cn.separar, hasPermission):
-            if (len(txt_splitted) > 1):
-                return commands.splitList(int(txt_splitted[1]))
-            else:
-                return commands.splitList()
-        
-        if checkCommand(userInput, cn.move, hasPermission):
-            return commands.movePositionFromList(txt_splitted[1:])
-
-        if checkCommand(userInput, cn.trocar, hasPermission):
-            return commands.swapPositionFromList(txt_splitted[1:])
-
-        if checkCommand(userInput, cn.lista):
-            return commands.showList()
-            
-        if checkCommand(userInput, cn.adicioname):
-            return commands.addToList( [str(messageObj.author.name)])
-
-        if checkCommand(userInput, cn.removeme):
-            return commands.removeFromList( [str(messageObj.author.name)] )
-
-        if checkCommand(userInput, cn.ajuda):
-            ajudaRetorno = "Comandos: \n"
-            for text in cn.ajudaList:
-                ajudaRetorno += "> " + text
-                ajudaRetorno += "\n"
-            return ajudaRetorno
-
-def checkCommand(userInput, commandName, hasPermission = True) -> bool:
-    if(hasPermission):
-        for command in commandName:
-            if(userInput == command):
-                return True
-    return False
-
-## Métodos de verificação
-
-def checkRoles(userRoles, validRoles) -> bool:
-    if(len(validRoles) == 0):
-        return True
-    for user in userRoles:
-        for valid in validRoles:
-            if(re.search(str(user).lower(),str(valid).lower())):
-                return True
-    return False
-
-def getValidRoles():
-    listRoles = []
-    retornoList = []
-
-    with open('config.txt') as f:   
-        for line in f:
-            if re.search("roles", line):
-                listRoles = line.split("=")
-                listRoles.pop(0)
-                for i in listRoles:
-                    j = i.split(',')
-                    retornoList = j
+    def addNewList(self, ctx):
+        return commands.appendNewList(self.Filas, self.handle_response_msg(ctx.message.content))        
     
-    return retornoList
+    def removeAuthorFromList(self, ctx):
+        return commands.removeFromList(self.Filas, [ctx.message.author.name])
+
+    def removeNamesFromList(self, ctx):
+        return commands.removeFromList(self.Filas, self.handle_response_msg(ctx.message.content))    
+
+    def removeList(self, number):
+        return commands.removeList(self.Filas, int(number))        
+    
+    def lockUnlockGroupList(self):
+        return commands.toggleListStatus(self.Filas)
+
+    def defaultShuffle(self):
+        return commands.qbgShuffleList(self.Filas, -1)
+
+    def reShuffle(self):
+        return commands.qbgShuffleList(self.Filas, 0)
+    
+    def shuffleEverything(self):
+        return commands.qbgShuffleList(self.Filas, 2)
+
+    def splitList(self, ctx = None):
+        if (ctx != None and len(self.handle_response_msg(ctx.message.content)) > 0):
+            return commands.splitList(self.Filas,int(self.handle_response_msg(ctx.message.content)[0]))
+        else:
+            return commands.splitList(self.Filas)
+    
+    def movePosition(self, ctx):
+        return commands.movePositionFromList(self.Filas, self.handle_response_msg(ctx.message.content))
+
+    def swapPosition(self, ctx):
+        return commands.swapPositionFromList(self.Filas, self.handle_response_msg(ctx.message.content))
+
+responses = Responses()

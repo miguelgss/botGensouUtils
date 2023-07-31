@@ -1,30 +1,22 @@
 import random
+from errors import ExpectedException
+from enums import Color, ErrorMessages, StatusLista
+from classes.jogador import Jogador
 
-#region Mensagens
-MsgListaBloqueada = '🔒 Lista(s) bloqueada(s)!'
-MsgListaDesbloqueada = '🔓 Lista(s) desbloqueada(s)!'
-#endregion
+#TODO: Registrar a classe 'Jogador" na lista ao invés do nome em texto.
 
-isGroupListLocked = False
-groupList = [[]]
-waitList = []
+def toggleListStatus(filas):
+    filas.isGroupListLocked = not filas.isGroupListLocked
+    if (not filas.isGroupListLocked):
+        filas.waitList
+        addToList(filas, filas.waitList)
+        filas.waitList = []
+    return StatusLista.Bloqueada.value if filas.isGroupListLocked else StatusLista.Desbloqueada.value
 
-def getIsGroupListLocked():
-    return isGroupListLocked
-
-def toggleListStatus():
-    global isGroupListLocked
-    isGroupListLocked = not isGroupListLocked
-    if (not isGroupListLocked):
-        global waitList
-        addToList(waitList)
-        waitList = []
-    return MsgListaBloqueada if isGroupListLocked else MsgListaDesbloqueada
-
-def showList() -> str:
-    textoLista = MsgListaBloqueada + '\n\n' if isGroupListLocked else ''
+def showList(groupList: list, isGroupListLocked: bool, waitList: list) -> str:
+    textoLista = StatusLista.Bloqueada.value + '\n\n' if isGroupListLocked else ''
     if(len(groupList) < 1):
-        return "Não existem listas no momento. Por favor, utilize o comando 'adiciona' ou 'adicionalista' para gerar uma nova lista."
+        raise ExpectedException("Não existem listas no momento. Por favor, utilize o comando 'adiciona' ou 'adicionalista' para gerar uma nova lista.")
     for index, lista in enumerate(groupList):
         textoLista += "📜 Lista " + str(index+1) + ": \n"
         posCount = 1
@@ -40,14 +32,14 @@ def showList() -> str:
     return textoLista
 
 # Criação, separação e exclusão de listas
-def appendNewList(names):
+def appendNewList(filas, names):
     newlist = []
     msgsLista = 'Nova lista criada! \n'
     try:
         for name in names:
             jaEstaNaLista = False
             indexLista = 0
-            for index, lista in enumerate(groupList):
+            for index, lista in enumerate(filas.groupList):
                 listLower = map(str.lower, lista)
 
                 if name.lower() in listLower:
@@ -60,58 +52,60 @@ def appendNewList(names):
                 newlist.append(name)
                 msgsLista += name + " foi adicionado a nova lista! \n"          
         
-        groupList.append(newlist)
+        filas.groupList.append(newlist)
 
-        manageListTxtFile()
+        manageListTxtFile(filas)
+
         return msgsLista
     except Exception as e:
-        return "Erro: " + str(e)
+        raise e
 
-def splitList(listIndex = 1):
+def splitList(filas, listIndex = 1):
     newlist = []
     msgLista = 'Nova lista criada! \n'
     listIndex -= 1
     try:
-        newlist = groupList[listIndex][(len(groupList[listIndex])//2):]
-        removeFromList(newlist)
+        newlist = filas.groupList[listIndex][(len(filas.groupList[listIndex])//2):]
+        removeFromList(filas, newlist)
 
-        groupList.append(newlist)
+        filas.groupList.append(newlist)
 
         for name in newlist:
             msgLista += name + " foi adicionado a nova lista! \n"
 
-        manageListTxtFile()
+        manageListTxtFile(filas)
         return msgLista
     except Exception as e:
-        return "Erro: " + str(e)
+        raise e
 
-def removeList(listIndex):
+def removeList(filas, listIndex):
     listIndex -= 1
     try:
-        if(len(groupList) > 1):
-            msgLista = "**_Backup listas passadas: _** \n" + showList()
-            listCopy = groupList[listIndex].copy()
-            groupList.pop(listIndex)
+        if(len(filas.groupList) > 1):
+            listCopy = filas.groupList[listIndex].copy()
+            filas.groupList.pop(listIndex)
 
-            addToList(listCopy)
+            addToList(filas, listCopy)
 
             manageDeletedListTxtFile(listIndex)
-            return msgLista
+            return f'lista {listIndex + 1} foi removida. Os membros contidos nela foram movidos para outra(s) lista(s).'
         else:
-            raise Exception("Não é possível apagar uma lista quando há apenas uma!")
+            raise ExpectedException(ErrorMessages.SemListaApagavel.value)
+    except ExpectedException as ee:
+        raise ee
     except Exception as e:
-        return "Erro: " + str(e)
+        raise e
 
 # Manipulação dos nomes nas listas
-def addToList(names):
+def addToList(filas, names):
     msgsLista = ''
     try:
-        if(isGroupListLocked):
+        if(filas.isGroupListLocked):
             for name in names:
                 jaEstaNaLista = False
                 jaEstaNaListaEspera = False
                 indexLista = 0
-                for index, lista in enumerate(groupList):
+                for index, lista in enumerate(filas.groupList):
                     
                     listLower = map(str.lower, lista)
 
@@ -119,7 +113,7 @@ def addToList(names):
                         jaEstaNaLista = True
                         indexLista = index
                 
-                waitListLower = map(str.lower, waitList)
+                waitListLower = map(str.lower, filas.waitList)
                 if name.lower() in waitListLower:
                     jaEstaNaListaEspera = True
                 
@@ -128,17 +122,16 @@ def addToList(names):
                 elif(jaEstaNaListaEspera):
                     msgsLista += name + " já está na lista de espera! \n"
                 else:
-                    waitList.append(name)
+                    filas.waitList.append(name)
                     msgsLista += name + " foi adicionado a lista de espera! \n"
         else:
-            if(len(groupList) < 1):
+            if(len(filas.groupList) < 1):
                 return appendNewList(names)
             for name in names:
                 countNamesList = []
                 jaEstaNaLista = False
                 indexLista = 0
-                for index, lista in enumerate(groupList):
-                    
+                for index, lista in enumerate(filas.groupList):
                     listLower = map(str.lower, lista)
 
                     if name.lower() in listLower:
@@ -149,20 +142,20 @@ def addToList(names):
                 if(jaEstaNaLista):
                     msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
                 else:
-                    groupList[countNamesList.index(min(countNamesList))].append(name)
+                    filas.groupList[countNamesList.index(min(countNamesList))].append(name)
                     msgsLista += name + " foi adicionado a lista! \n" 
             
-            manageListTxtFile()
+            manageListTxtFile(filas)
         return msgsLista
     except Exception as e:
-        return "Erro: " + str(e)
+        raise e
 
-def qbgShuffleList(shuffleOrReShuffle):
+def qbgShuffleList(filas, shuffleOrReShuffle):
     try:
-        if(isGroupListLocked):
-            toggleListStatus()
+        if(filas.isGroupListLocked):
+            toggleListStatus(filas)
         if(shuffleOrReShuffle == -1 or shuffleOrReShuffle == 0):
-            for index, lista in enumerate(groupList):
+            for index, lista in enumerate(filas.groupList):
                 newlist = [lista[shuffleOrReShuffle]]
                 lista.remove(lista[shuffleOrReShuffle])
 
@@ -172,33 +165,34 @@ def qbgShuffleList(shuffleOrReShuffle):
                 for element in lista:
                     newlist.append(element)
                 
-                groupList[index] = newlist.copy()
+                filas.groupList[index] = newlist.copy()
         else:
             allListNames = []
-            numLists = len(groupList)
-            for index, lista in enumerate(groupList):
+            numLists = len(filas.groupList)
+            for index, lista in enumerate(filas.groupList):
                 for element in lista:
                     allListNames.append(element)
             for name in allListNames:
-                for lista in groupList:
+                for lista in filas.groupList:
                     try:
                         lista.remove(name)
                     except Exception as e:
                         continue
             random.shuffle(allListNames)
-            addToList(allListNames)
+            addToList(filas,allListNames)
 
-        manageListTxtFile()
-        return showList()
+        manageListTxtFile(filas)
+        return showList(filas.groupList, filas.isGroupListLocked, filas.waitList)
+
     except Exception as e:
         return "Erro: " + str(e)
     
-def removeFromList(names):
+def removeFromList(filas, names):
     try:
         msgsLista = ""
         for name in names:
             # Remove o nome caso esteja preente em alguma das listas
-            for lista in groupList:
+            for lista in filas.groupList:
                 try:
                     lista.remove(name)
                     msgsLista += name + " foi removido! \n"
@@ -207,59 +201,65 @@ def removeFromList(names):
             
             # Remove nome da waitList
             try:
-                waitList.remove(name)
+                filas.waitList.remove(name)
                 msgsLista += name + " foi removido! \n"
             except Exception as e:
                 continue
 
-        manageListTxtFile()
+        manageListTxtFile(filas)
         return msgsLista
 
     except Exception as e:
         return "Não foi possível remover o nome solicitado. Por favor, verifique a escrita ou o que há na lista e tente novamente."
 
-def movePositionFromList(positions):
+def movePositionFromList(filas, positions):
     try:
         if(len(positions) != 2 and len(positions) != 4):
-            raise Exception("O número de argumentos está fora do formato. Informe 2 argumentos (apenas as posições para mexer na primeira lista) ou 4 argumentos (para mover posições de outras listas ou entre listas).")
+            raise ExpectedException("O número de argumentos está fora do formato. Informe 2 argumentos (apenas as posições para mexer na primeira lista) ou 4 argumentos (para mover posições de outras listas ou entre listas).")
         for index, number in enumerate(positions):
             positions[index] = int(number)
         for index,number in enumerate(positions):
             positions[index] = number -1
         if(len(positions) == 2):
             movedName = groupList[0][positions[0]]
-            groupList[0].remove(movedName)
-            groupList[0] = groupList[0][0:positions[1]] + [movedName] + groupList[0][positions[1]:]
+            filas.groupList[0].remove(movedName)
+            filas.groupList[0] = filas.groupList[0][0:positions[1]] + [movedName] + filas.groupList[0][positions[1]:]
         elif(len(positions) == 4):
-            movedName = groupList[positions[0]][positions[1]]
-            groupList[positions[0]].remove(movedName)
-            groupList[positions[2]] = groupList[positions[2]][0:positions[3]] + [movedName] + groupList[positions[2]][positions[3]:]
-        manageListTxtFile()
-        return showList()
-    except Exception as e:
-        return "Erro: " + str(e)
+            movedName = filas.groupList[positions[0]][positions[1]]
+            filas.groupList[positions[0]].remove(movedName)
+            filas.groupList[positions[2]] = filas.groupList[positions[2]][0:positions[3]] + [movedName] + filas.groupList[positions[2]][positions[3]:]
 
-def swapPositionFromList(positions):
+        manageListTxtFile(filas)
+        return showList(filas.groupList, filas.isGroupListLocked, filas.waitList)
+
+    except ExpectedException as ee:
+        raise ee
+    except Exception as e:
+        raise e
+
+def swapPositionFromList(filas, positions):
     try:
         if(len(positions) != 2 and len(positions) != 4):
-            raise Exception("O número de argumentos está fora do formato. Informe 2 argumentos (apenas as posições para mexer na primeira lista) ou 4 argumentos (para mover posições de outras listas ou entre listas).")
+            raise ExpectedException("O número de argumentos está fora do formato. Informe 2 argumentos (apenas as posições para mexer na primeira lista) ou 4 argumentos (para mover posições de outras listas ou entre listas).")
         for index, number in enumerate(positions):
             positions[index] = int(number)
         for index,number in enumerate(positions):
             positions[index] = number -1
         if(len(positions) == 2):
-            groupList[0][positions[0]], groupList[0][positions[1]] = groupList[0][positions[1]], groupList[0][positions[0]]
+            filas.groupList[0][positions[0]], filas.groupList[0][positions[1]] = filas.groupList[0][positions[1]], filas.groupList[0][positions[0]]
         elif(len(positions) == 4):
-            groupList[positions[0]][positions[1]], groupList[positions[2]][positions[3]] = groupList[positions[2]][positions[3]], groupList[positions[0]][positions[1]]
+            filas.groupList[positions[0]][positions[1]], filas.groupList[positions[2]][positions[3]] = filas.groupList[positions[2]][positions[3]], filas.groupList[positions[0]][positions[1]]
 
-        manageListTxtFile()
-        return showList()
+        manageListTxtFile(filas)
+        return showList(filas.groupList, filas.isGroupListLocked, filas.waitList)
+    except ExpectedException as ee:
+        raise ee
     except Exception as e:
-        return "Erro: " + str(e)
+        raise e
 
 # Criação de arquivo com a lista
-def manageListTxtFile():
-    for index, lista in enumerate(groupList):
+def manageListTxtFile(filas):
+    for index, lista in enumerate(filas.groupList):
         textoLista = ''
         textoLista += "Lista " + str(index+1) + ": \n"
         posCount = 1
