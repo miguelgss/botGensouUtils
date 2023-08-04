@@ -221,7 +221,7 @@ def movePositionFromList(filas, positions):
         for index,number in enumerate(positions):
             positions[index] = number -1
         if(len(positions) == 2):
-            movedName = groupList[0][positions[0]]
+            movedName = filas.groupList[0][positions[0]]
             filas.groupList[0].remove(movedName)
             filas.groupList[0] = filas.groupList[0][0:positions[1]] + [movedName] + filas.groupList[0][positions[1]:]
         elif(len(positions) == 4):
