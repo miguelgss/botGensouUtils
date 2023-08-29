@@ -7,8 +7,15 @@ class Color(Enum):
 
 class ErrorMessages(Enum):
     SemPermissao = "Você não possui permissão para usar esse comando."
-    ComandoNaoEncontrado = "Comando não encontrado."
+    ComandoNaoEncontrado = "Comando não encontrado. Use {h para verificar os comandos disponíveis."
+    UsuarioNaoEncontrado = "Usuário não encontrado. Para adicionar ou remover, é necessário _pingar_ o usuário que deseja adicionar ou remover da lista ou, caso queira entrar ou sair, utilizar o comando addme ou rme."
     SemListaApagavel = "Não é possível apagar uma lista quando há apenas uma!"
+
+    def SemJogadoresSuficientes(indexLista: int):
+        return f"Não é possível iniciar a Lista {indexLista} com menos de dois de jogadores"
+    
+    def ListaJaIniciada(indexLista: int):
+        return f"A Lista {indexLista} já foi iniciada!"
 
 class StatusLista(Enum):
     Bloqueada = '🔒 Lista(s) bloqueada(s)!'
@@ -32,12 +39,19 @@ class CommandNames(list, Enum):
     Bloquear = ['bloquear', 'b']
     Limpar = ['limpar', 'clear', 'c']
 
-    ajudaList = [
+    BonsJogos = ['gg', 'ggs']
+    IniciarLista = ['iniciarlista', 'iniciar', 'i']
+    PararLista = ['pararLista', 'parar', 'p']
+
+    ajudaBasicoList = [
         "**- De uso livre:**",
         f"**{Ajuda}** - Mostra os comandos do bot;",
         f"**{Lista}** - Mostra a lista atual;",
         f"**{Adicioname}** - Adiciona quem mandou a mensagem para a lista;",
         f"**{Removeme}** - Remove quem mandou a mensagem da lista;",
+        f"**{BonsJogos}** - Avança para a próxima partida caso seja um dos jogadores jogando atualmente;"
+    ]
+    ajudaList = [
         "---------------------------------------------------------",
         "**- Exige cargos com permissão:**",
         f"**{AdicionaLista}** - Cria uma nova lista. Opcionalmente, pessoas podem ser acrescentadas diretamente a essa nova lista.",
@@ -53,8 +67,10 @@ class CommandNames(list, Enum):
         f"**{Trocar} (Opcional - __NumeroLista__) __X__ (Opcional - __NumeroLista__) __Y__** - Troca um nome (posição X) com a posição especificada (Y)",
         "Exemplo: t 1 1 2 1 trocará as posições entre lista1-primeiroNome e lista2-primeiroNome;",
         f"**{Bloquear}** - Bloqueia/desbloqueia as listas. Quando bloqueado, cria a lista de espera. Quando desbloqueado, adiciona a lista os nomes em espera;",
-        f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário."
-        ]
+        f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
+        f"**{IniciarLista}** - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!';",
+        f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha."
+    ]
 
     def __list__(self) -> list:
         return list.__list__(self)

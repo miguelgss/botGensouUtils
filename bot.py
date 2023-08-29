@@ -30,8 +30,13 @@ def run_discord_bot():
     ###--- COMANDOS LIVRES
     @bot.command(aliases=CommandNames.Ajuda)
     async def Ajuda(ctx):
+        ajudaList = []
+        if(checkRoles(ctx.author.roles, roles)):
+            ajudaList = CommandNames.ajudaBasicoList + CommandNames.ajudaList
+        else:
+            ajudaList = CommandNames.ajudaBasicoList
         ajudaRetorno = "Comandos: \n"
-        for text in CommandNames.ajudaList:
+        for text in ajudaList:
             ajudaRetorno += "> " + text
             ajudaRetorno += "\n"
         await ctx.send(
@@ -64,6 +69,12 @@ def run_discord_bot():
             color=Color.Sucesso.value)
         )
 
+    @commands.cooldown(rate=1, per=10, type=commands.BucketType.default)
+    @bot.command(aliases=CommandNames.BonsJogos)
+    async def BonsJogos(ctx):
+        await ctx.send(
+            responses.goodGames(ctx)
+        )
     ### ---
 
     ### --- COMANDOS COM PERMISSIONAMENTO
@@ -78,28 +89,28 @@ def run_discord_bot():
         
     @bot.command(aliases=CommandNames.Adiciona)
     @commands.has_any_role(*roles)
-    async def Adiciona(ctx):
+    async def Adiciona(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Adiciona[0]}",
-            description=responses.addNamesToList(ctx),
+            description=responses.addNamesToList(ctx, users),
             color=Color.Sucesso.value)
         )
 
     @bot.command(aliases=CommandNames.AdicionaLista)
     @commands.has_any_role(*roles)
-    async def AdicionaLista(ctx):
+    async def AdicionaLista(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.AdicionaLista[0]}",
-            description=responses.addNewList(ctx),
+            description=responses.addNewList(ctx, users),
             color=Color.Sucesso.value)
         )
         
     @bot.command(aliases=CommandNames.Remove)
     @commands.has_any_role(*roles)
-    async def Remove(ctx):
+    async def Remove(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Remove[0]}",
-            description=responses.removeNamesFromList(ctx),
+            description=responses.removeNamesFromList(ctx, users),
             color=Color.Sucesso.value)
         )
         
@@ -176,11 +187,28 @@ def run_discord_bot():
             if message.author == bot.user:
                 messagesList.append(message)
         await ctx.channel.delete_messages(messagesList)
+
+    @bot.command(aliases=CommandNames.IniciarLista)
+    @commands.has_any_role(*roles)
+    async def IniciarLista(ctx):
+        await ctx.send(
+            responses.startList()
+            )
+
+    @bot.command(aliases=CommandNames.PararLista)
+    @commands.has_any_role(*roles)
+    async def PararLista(ctx):
+        await ctx.send(
+            embed=discord.Embed(title=f"{CommandNames.PararLista[0]}",
+            description=responses.stopList(),
+            color=Color.Sucesso.value)
+        )
     ###---
 
     ###--- HANDLER DE ERROS 
     @bot.event
     async def on_command_error(ctx, error):
+        print(error)
         if isinstance(error, commands.errors.MissingAnyRole):
             await ctx.send(
                 embed=discord.Embed(title="Alerta:",
@@ -191,6 +219,12 @@ def run_discord_bot():
             await ctx.send(
                 embed=discord.Embed(title="Alerta:",
                 description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.ComandoNaoEncontrado.value,
+                color=Color.Alerta.value)
+            )
+        elif isinstance(error, commands.errors.MemberNotFound):
+            await ctx.send(
+                embed=discord.Embed(title="Alerta:",
+                description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.UsuarioNaoEncontrado.value,
                 color=Color.Alerta.value)
             )
         else:
@@ -221,4 +255,12 @@ def getValidRoles():
     
     return retornoList
 
+def checkRoles(userRoles, validRoles) -> bool:
+    if(len(validRoles) == 0):
+        return True
+    for user in userRoles:
+        for valid in validRoles:
+            if(re.search(str(user).lower(),str(valid).lower())):
+                return True
+    return False
 ###---

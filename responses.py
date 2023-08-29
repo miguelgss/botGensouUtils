@@ -12,22 +12,23 @@ class Responses():
         return userArgs[1:]
 
     def showListFormatted(self):
-        return commands.showList(self.Filas.groupList, self.Filas.isGroupListLocked, self.Filas.waitList)
+        return commands.showList(self.Filas)
 
     def addAuthorToList(self, ctx):
-        return commands.addToList(self.Filas, [ctx.message.author.name])
+        return commands.addUsersToList(self.Filas, [ctx.message.author])
 
-    def addNamesToList(self, ctx):
-        return commands.addToList(self.Filas, self.handle_response_msg(ctx.message.content))    
+    def addNamesToList(self, ctx, users):
+        return commands.addUsersToList(self.Filas, users)
+        #return commands.addToList(self.Filas, self.handle_response_msg(ctx.message.content))    
 
-    def addNewList(self, ctx):
-        return commands.appendNewList(self.Filas, self.handle_response_msg(ctx.message.content))        
+    def addNewList(self, ctx, users):
+        return commands.appendNewList(self.Filas, users)        
     
     def removeAuthorFromList(self, ctx):
-        return commands.removeFromList(self.Filas, [ctx.message.author.name])
+        return commands.removeFromList(self.Filas, [ctx.message.author])
 
-    def removeNamesFromList(self, ctx):
-        return commands.removeFromList(self.Filas, self.handle_response_msg(ctx.message.content))    
+    def removeNamesFromList(self, ctx, users):
+        return commands.removeFromList(self.Filas, users)    
 
     def removeList(self, number):
         return commands.removeList(self.Filas, int(number))        
@@ -56,4 +57,12 @@ class Responses():
     def swapPosition(self, ctx):
         return commands.swapPositionFromList(self.Filas, self.handle_response_msg(ctx.message.content))
 
+    def goodGames(self, ctx):
+        return commands.advanceListStatus(self.Filas, ctx)
+
+    def startList(self):
+        return commands.startList(self.Filas)
+
+    def stopList(self):
+        return commands.stopAllList(self.Filas)
 responses = Responses()

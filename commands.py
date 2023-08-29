@@ -1,6 +1,6 @@
 import random
 from errors import ExpectedException
-from enums import Color, ErrorMessages, StatusLista
+from enums import ErrorMessages, StatusLista
 from classes.jogador import Jogador
 
 #TODO: Registrar a classe 'Jogador" na lista ao invés do nome em texto.
@@ -13,44 +13,129 @@ def toggleListStatus(filas):
         filas.waitList = []
     return StatusLista.Bloqueada.value if filas.isGroupListLocked else StatusLista.Desbloqueada.value
 
-def showList(groupList: list, isGroupListLocked: bool, waitList: list) -> str:
-    textoLista = StatusLista.Bloqueada.value + '\n\n' if isGroupListLocked else ''
-    if(len(groupList) < 1):
+def showList(filas) -> str:
+    textoLista = StatusLista.Bloqueada.value + "\n\n" if filas.isGroupListLocked else ''
+    if(len(filas.groupList) < 1):
         raise ExpectedException("Não existem listas no momento. Por favor, utilize o comando 'adiciona' ou 'adicionalista' para gerar uma nova lista.")
-    for index, lista in enumerate(groupList):
+    for index, lista in enumerate(filas.groupList):
         textoLista += "📜 Lista " + str(index+1) + ": \n"
         posCount = 1
-        for name in lista:
-            textoLista += str(posCount) + " - " + name + "; \n"
+        for jogador in lista:
+            if jogador.lutando:
+                textoLista += "**_" +str(posCount) + " -<@" + str(jogador.idJogador) + ">_**" + " 🥊 **LUTANDO!**" + "\n"
+            else:
+                textoLista += str(posCount) + " - <@" + str(jogador.idJogador) + ">" + "; \n"
             posCount += 1
     
-    if isGroupListLocked:
+    if filas.isGroupListLocked:
         textoLista += "\n🕒 Lista de Espera: \n"
-        for name in waitList:
-            textoLista += name + "; \n"
+        for jogador in filas.waitList:
+            textoLista += jogador.nome + "; \n"
 
     return textoLista
 
+# Iniciação e atualização de estado da lista (quem está jogando no momento)
+def advanceListStatus(filas, ctx):
+    try:
+        ctxAuthorEqualsPlayerFighting = False
+        for index, lista in enumerate(filas.groupList):
+            for i, jogador in enumerate(lista):
+                if(jogador.lutando and (jogador.idJogador == ctx.author.id or jogador.nome == ctx.author.name)):
+                    ctxAuthorEqualsPlayerFighting = True
+
+                    if(lista.index(jogador) == 0):
+                        lista[i].lutando = False
+                        if(len(lista) > 2):
+                            lista[i+2].lutando = True
+                        else:
+                            stopList(filas, index)
+                            return f"Partidas da Lista {index+1} finalizadas."
+
+                    elif(lista.index(jogador) == (len(lista)-1) or lista.index(jogador)+1 == (len(lista)-1)):
+                        stopList(filas, index)
+                        return f"Partidas da Lista {index+1} finalizadas."
+
+                    elif(lista.index(jogador) != 0 and lista[i-1].lutando == True):
+                        lista[i-1].lutando = False
+                        lista[i+1].lutando = True
+                        
+            lutandoAgora = list(filter(lambda x: x.lutando==True, lista))
+
+            filas.groupList[index] = lista
+
+            if(ctxAuthorEqualsPlayerFighting):
+                if(len(lutandoAgora) > 0):
+                    return "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + ">"
+                else:
+                    return f"Não há ninguém lutando na Lista {index+1}."
+            elif(len(lutandoAora) > 0):
+                return f"Quem está lutando agora são os jogadores {lutandoAgora[0].nome} e {lutandoAgora[1].nome}. Espere a sua vez!"
+            else:
+                return f"Não há ninguém lutando na Lista {index+1}."
+
+    except Exception as e:
+        raise e
+
+def startList(filas):
+    try:
+        for index, lista in enumerate(filas.groupList):
+            if(len(lista) < 2):
+                raise ExpectedException(ErrorMessages.SemJogadoresSuficientes(index+1))
+            if(any(list(filter(lambda x: x.lutando==True, lista)))):
+                raise ExpectedException(ErrorMessages.ListaJaIniciada(index+1))
+            else:
+                stopAllList(filas)
+                filas.groupList[index][0].lutando = True
+                filas.groupList[index][1].lutando = True
+                return "<@" + str(filas.groupList[index][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[index][1].idJogador) + ">"
+
+    except Exception as e:
+        raise e
+
+def stopAllList(filas):
+    try:
+        for index, lista in enumerate(filas.groupList):
+            for i, jogador in enumerate(lista):
+                lista[i].lutando = False
+
+            filas.groupList[index] = lista
+        return "Todas as listas foram paradas."
+
+    except Exception as e:
+        raise e
+
+def stopList(filas, index):
+    try:
+        for i, jogador in enumerate(filas.groupList[index]):
+            filas.groupList[index][i].lutando = False
+
+            filas.groupList[index] = filas.groupList[index]
+    except Exception as e:
+        raise e
+
+
 # Criação, separação e exclusão de listas
-def appendNewList(filas, names):
+
+def appendNewList(filas, users):
     newlist = []
     msgsLista = 'Nova lista criada! \n'
     try:
-        for name in names:
+        for user in users:
+            jogador = user if isinstance(user, Jogador) else Jogador(user.id, user.name)
+
             jaEstaNaLista = False
             indexLista = 0
             for index, lista in enumerate(filas.groupList):
-                listLower = map(str.lower, lista)
 
-                if name.lower() in listLower:
+                if jogador in lista:
                     jaEstaNaLista = True
                     indexLista = index
             
             if(jaEstaNaLista):
-                msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
+                msgsLista += jogador.nome + " já está na lista " + str(indexLista+1) + "! \n"
             else:
-                newlist.append(name)
-                msgsLista += name + " foi adicionado a nova lista! \n"          
+                newlist.append(jogador)
+                msgsLista += jogador.nome + " foi adicionado a nova lista! \n"          
         
         filas.groupList.append(newlist)
 
@@ -70,8 +155,8 @@ def splitList(filas, listIndex = 1):
 
         filas.groupList.append(newlist)
 
-        for name in newlist:
-            msgLista += name + " foi adicionado a nova lista! \n"
+        for jogador in newlist:
+            msgLista += jogador.nome + " foi adicionado a nova lista! \n"
 
         manageListTxtFile(filas)
         return msgLista
@@ -85,7 +170,7 @@ def removeList(filas, listIndex):
             listCopy = filas.groupList[listIndex].copy()
             filas.groupList.pop(listIndex)
 
-            addToList(filas, listCopy)
+            addUsersToList(filas, listCopy)
 
             manageDeletedListTxtFile(listIndex)
             return f'lista {listIndex + 1} foi removida. Os membros contidos nela foram movidos para outra(s) lista(s).'
@@ -97,53 +182,56 @@ def removeList(filas, listIndex):
         raise e
 
 # Manipulação dos nomes nas listas
-def addToList(filas, names):
+
+def addUsersToList(filas, users):
     msgsLista = ''
     try:
         if(filas.isGroupListLocked):
-            for name in names:
+            for user in users:
+                jogador = user if isinstance(user, Jogador) else Jogador(user.id, user.name)
+
                 jaEstaNaLista = False
                 jaEstaNaListaEspera = False
                 indexLista = 0
                 for index, lista in enumerate(filas.groupList):
-                    
-                    listLower = map(str.lower, lista)
 
-                    if name.lower() in listLower:
+                    if jogador in lista:
                         jaEstaNaLista = True
                         indexLista = index
                 
-                waitListLower = map(str.lower, filas.waitList)
-                if name.lower() in waitListLower:
+                if jogador in filas.waitList:
                     jaEstaNaListaEspera = True
                 
                 if(jaEstaNaLista):
-                    msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
+                    msgsLista += jogador.nome + " já está na lista " + str(indexLista+1) + "! \n"
                 elif(jaEstaNaListaEspera):
-                    msgsLista += name + " já está na lista de espera! \n"
+                    msgsLista += jogador.nome + " já está na lista de espera! \n"
                 else:
-                    filas.waitList.append(name)
-                    msgsLista += name + " foi adicionado a lista de espera! \n"
+                    filas.waitList.append(jogador)
+                    msgsLista += jogador.nome + " foi adicionado a lista de espera! \n"
         else:
             if(len(filas.groupList) < 1):
-                return appendNewList(names)
-            for name in names:
+                return appendNewList(users)
+            for user in users:
+                jogador = user if isinstance(user, Jogador) else Jogador(user.id, user.name)
+
                 countNamesList = []
                 jaEstaNaLista = False
                 indexLista = 0
                 for index, lista in enumerate(filas.groupList):
-                    listLower = map(str.lower, lista)
 
-                    if name.lower() in listLower:
+                    if jogador in lista:
                         jaEstaNaLista = True
                         indexLista = index
                     countNamesList.append(len(lista))
                 
                 if(jaEstaNaLista):
-                    msgsLista += name + " já está na lista " + str(indexLista+1) + "! \n"
+                    msgsLista += jogador.nome + " já está na lista " + str(indexLista+1) + "! \n"
                 else:
-                    filas.groupList[countNamesList.index(min(countNamesList))].append(name)
-                    msgsLista += name + " foi adicionado a lista! \n" 
+                    jogador.posicao = min(countNamesList)+1
+                    jogador.lista = countNamesList.index(min(countNamesList))+1
+                    filas.groupList[countNamesList.index(min(countNamesList))].append(jogador)
+                    msgsLista += jogador.nome + " foi adicionado a lista! \n" 
             
             manageListTxtFile(filas)
         return msgsLista
@@ -152,8 +240,6 @@ def addToList(filas, names):
 
 def qbgShuffleList(filas, shuffleOrReShuffle):
     try:
-        if(filas.isGroupListLocked):
-            toggleListStatus(filas)
         if(shuffleOrReShuffle == -1 or shuffleOrReShuffle == 0):
             for index, lista in enumerate(filas.groupList):
                 newlist = [lista[shuffleOrReShuffle]]
@@ -167,42 +253,47 @@ def qbgShuffleList(filas, shuffleOrReShuffle):
                 
                 filas.groupList[index] = newlist.copy()
         else:
-            allListNames = []
+            allListPlayers = []
             numLists = len(filas.groupList)
             for index, lista in enumerate(filas.groupList):
                 for element in lista:
-                    allListNames.append(element)
-            for name in allListNames:
+                    allListPlayers.append(element)
+            for name in allListPlayers:
                 for lista in filas.groupList:
                     try:
                         lista.remove(name)
                     except Exception as e:
                         continue
-            random.shuffle(allListNames)
-            addToList(filas,allListNames)
+            random.shuffle(allListPlayers)
+            addToList(filas,allListPlayers)
+
+        if(filas.isGroupListLocked):
+            toggleListStatus(filas)
 
         manageListTxtFile(filas)
-        return showList(filas.groupList, filas.isGroupListLocked, filas.waitList)
+        return showList(filas)
 
     except Exception as e:
-        return "Erro: " + str(e)
+        raise e
     
-def removeFromList(filas, names):
+def removeFromList(filas, users):
     try:
         msgsLista = ""
-        for name in names:
+        for user in users:
+            jogador = user if isinstance(user, Jogador) else Jogador(user.id, user.name)
+
             # Remove o nome caso esteja preente em alguma das listas
             for lista in filas.groupList:
                 try:
-                    lista.remove(name)
-                    msgsLista += name + " foi removido! \n"
+                    lista.remove(jogador)
+                    msgsLista += jogador.nome + " foi removido! \n"
                 except Exception as e:
                     continue
             
             # Remove nome da waitList
             try:
-                filas.waitList.remove(name)
-                msgsLista += name + " foi removido! \n"
+                filas.waitList.remove(jogador)
+                msgsLista += jogador.nome + " foi removido! \n"
             except Exception as e:
                 continue
 
@@ -230,7 +321,7 @@ def movePositionFromList(filas, positions):
             filas.groupList[positions[2]] = filas.groupList[positions[2]][0:positions[3]] + [movedName] + filas.groupList[positions[2]][positions[3]:]
 
         manageListTxtFile(filas)
-        return showList(filas.groupList, filas.isGroupListLocked, filas.waitList)
+        return showList(filas)
 
     except ExpectedException as ee:
         raise ee
@@ -251,7 +342,7 @@ def swapPositionFromList(filas, positions):
             filas.groupList[positions[0]][positions[1]], filas.groupList[positions[2]][positions[3]] = filas.groupList[positions[2]][positions[3]], filas.groupList[positions[0]][positions[1]]
 
         manageListTxtFile(filas)
-        return showList(filas.groupList, filas.isGroupListLocked, filas.waitList)
+        return showList(filas)
     except ExpectedException as ee:
         raise ee
     except Exception as e:
@@ -263,8 +354,8 @@ def manageListTxtFile(filas):
         textoLista = ''
         textoLista += "Lista " + str(index+1) + ": \n"
         posCount = 1
-        for name in lista:
-            textoLista += str(posCount) + " - " + name + "; \n"
+        for jogador in lista:
+            textoLista += str(posCount) + " - " + jogador.nome + "; \n"
             posCount += 1
         with open('listOBS' + str(index+1) + '.txt', 'w', encoding="utf-8") as file:
             file.write(textoLista)
