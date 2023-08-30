@@ -36,6 +36,7 @@ def showList(filas) -> str:
 
 # Iniciação e atualização de estado da lista (quem está jogando no momento)
 def advanceListStatus(filas, ctx):
+    msgRetorno = ""
     try:
         ctxAuthorEqualsPlayerFighting = False
         for index, lista in enumerate(filas.groupList):
@@ -49,46 +50,50 @@ def advanceListStatus(filas, ctx):
                             lista[i+2].lutando = True
                         else:
                             stopList(filas, index)
-                            return f"Partidas da Lista {index+1} finalizadas."
-
-                    elif(lista.index(jogador) == (len(lista)-1) or lista.index(jogador)+1 == (len(lista)-1)):
+                            msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
+                    elif(lista.index(jogador) == (len(lista)-1) or (lista.index(jogador)+1 == (len(lista)-1) and lista[i+1].lutando)):
                         stopList(filas, index)
-                        return f"Partidas da Lista {index+1} finalizadas."
-
+                        msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
                     elif(lista.index(jogador) != 0 and lista[i-1].lutando == True):
                         lista[i-1].lutando = False
                         lista[i+1].lutando = True
-                        
+                    elif(lista.index(jogador) > 0 and jogador.lutando and lista[i+1].lutando):
+                        lista[i].lutando = False
+                        lista[i+2].lutando = True
             lutandoAgora = list(filter(lambda x: x.lutando==True, lista))
 
             filas.groupList[index] = lista
 
             if(ctxAuthorEqualsPlayerFighting):
                 if(len(lutandoAgora) > 0):
-                    return "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + ">"
+                    msgRetorno += "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
                 else:
-                    return f"Não há ninguém lutando na Lista {index+1}."
-            elif(len(lutandoAora) > 0):
-                return f"Quem está lutando agora são os jogadores {lutandoAgora[0].nome} e {lutandoAgora[1].nome}. Espere a sua vez!"
+                    msgRetorno += f"Não há ninguém lutando na Lista {index+1}. \n"
+            elif(len(lutandoAgora) > 0):
+                msgRetorno += f"Quem está lutando agora são os jogadores {lutandoAgora[0].nome} e {lutandoAgora[1].nome}. Espere a sua vez! \n"
             else:
-                return f"Não há ninguém lutando na Lista {index+1}."
-
+                msgRetorno += f"Não há ninguém lutando na Lista {index+1}. \n"
+            
+            ctxAuthorEqualsPlayerFighting = False        
+            
+        return msgRetorno
     except Exception as e:
         raise e
 
 def startList(filas):
+    msgRetorno = ""
     try:
+        stopAllList(filas)
         for index, lista in enumerate(filas.groupList):
             if(len(lista) < 2):
-                raise ExpectedException(ErrorMessages.SemJogadoresSuficientes(index+1))
-            if(any(list(filter(lambda x: x.lutando==True, lista)))):
-                raise ExpectedException(ErrorMessages.ListaJaIniciada(index+1))
+                msgRetorno += ErrorMessages.SemJogadoresSuficientes(index+1) + "\n"
+            elif(any(list(filter(lambda x: x.lutando==True, lista)))):
+                msgRetorno += ErrorMessages.ListaJaIniciada(index+1) + "\n"
             else:
-                stopAllList(filas)
                 filas.groupList[index][0].lutando = True
                 filas.groupList[index][1].lutando = True
-                return "<@" + str(filas.groupList[index][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[index][1].idJogador) + ">"
-
+                msgRetorno += "<@" + str(filas.groupList[index][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[index][1].idJogador) + "> \n"
+        return msgRetorno
     except Exception as e:
         raise e
 
