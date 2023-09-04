@@ -2,6 +2,7 @@
 import discord
 import re
 from discord.ext import commands
+import requests
 
 # Importação de arquivos
 from responses import responses
@@ -12,6 +13,8 @@ intents =  discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
+
+versaoAtual = 220;
 
 def run_discord_bot():
 
@@ -25,6 +28,18 @@ def run_discord_bot():
 
     @bot.event
     async def on_ready():
+        try:
+            response = requests.get("https://api.github.com/repos/miguelgss/botGensouUtils/tags")
+            jsonConversion = response.json()
+            versaoLatest = jsonConversion[0]['name'].replace('v','')
+            versaoLatest = versaoLatest.replace('.','')
+            if(versaoAtual < int(versaoLatest)):
+                print(f"Nova versão (v{versaoLatest}) disponível! Acesse https://github.com/miguelgss/botGensouUtils/releases para baixar.")
+
+        except Exception as e:
+            print(str(e))
+
+        print(f'Versão atual: v{versaoAtual}')            
         print(f'{bot.user} ligou e está pronto para ser utilizado!' + " Use {h para ver os comandos disponíveis.")
 
     ###--- COMANDOS LIVRES
@@ -42,6 +57,14 @@ def run_discord_bot():
         await ctx.send(
             embed=discord.Embed(title=CommandNames.Ajuda[0],
             description=ajudaRetorno,
+            color=Color.Sucesso.value)
+        )
+
+    @bot.command(aliases=CommandNames.Tutorial)
+    async def Tutorial(ctx):
+        await ctx.send(
+            embed=discord.Embed(title=CommandNames.Tutorial[0],
+            description=CommandNames.ajudaGringous[0],
             color=Color.Sucesso.value)
         )
 
@@ -203,6 +226,13 @@ def run_discord_bot():
             description=responses.stopList(),
             color=Color.Sucesso.value)
         )
+
+    @bot.command(aliases=CommandNames.AvancarLista)
+    @commands.has_any_role(*roles)
+    async def AvancarLista(ctx, number = 1):
+        await ctx.send(
+            responses.skipMatch(number)
+        )
     ###---
 
     ###--- HANDLER DE ERROS 
@@ -263,4 +293,5 @@ def checkRoles(userRoles, validRoles) -> bool:
             if(re.search(str(user).lower(),str(valid).lower())):
                 return True
     return False
+
 ###---

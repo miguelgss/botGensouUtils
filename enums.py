@@ -23,6 +23,7 @@ class StatusLista(Enum):
 
 class CommandNames(list, Enum):
     Ajuda = ['help', 'h', 'ajuda']
+    Tutorial = ['tutorial']
     Lista = ['lista','l']
     AdicionaLista = ['adicionalista', 'al']
     Adiciona = ['adiciona', 'add', 'a']
@@ -40,8 +41,9 @@ class CommandNames(list, Enum):
     Limpar = ['limpar', 'clear', 'c']
 
     BonsJogos = ['gg', 'ggs']
+    AvancarLista = ['avançarlista', 'avançar', 'pular', 'skip']
     IniciarLista = ['iniciarlista', 'iniciar', 'i']
-    PararLista = ['pararLista', 'parar', 'p']
+    PararLista = ['pararlista', 'parar']
 
     ajudaBasicoList = [
         "**- De uso livre:**",
@@ -49,7 +51,8 @@ class CommandNames(list, Enum):
         f"**{Lista}** - Mostra a lista atual;",
         f"**{Adicioname}** - Adiciona quem mandou a mensagem para a lista;",
         f"**{Removeme}** - Remove quem mandou a mensagem da lista;",
-        f"**{BonsJogos}** - Avança para a próxima partida caso seja um dos jogadores jogando atualmente;"
+        f"**{BonsJogos}** - Avança para a próxima partida caso seja um dos jogadores jogando atualmente;",
+        f"**{Tutorial}** - Exibe um guia básico de como utilizar o bot"
     ]
     ajudaList = [
         "---------------------------------------------------------",
@@ -69,7 +72,12 @@ class CommandNames(list, Enum):
         f"**{Bloquear}** - Bloqueia/desbloqueia as listas. Quando bloqueado, cria a lista de espera. Quando desbloqueado, adiciona a lista os nomes em espera;",
         f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
         f"**{IniciarLista}** - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!';",
-        f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha."
+        f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha;",
+        f"**{AvancarLista}** (Opcional - __NumeroLista__) - Avança a lista especificada. Caso nenhum número seja passado, o comando avançará a primeira lista."
+    ]
+
+    ajudaGringous = [
+    '''- type {am \n- use {l to see the list \n- we will call you when it's your turn \n- play a ft2 against the person above you on the list \n- play a ft2 against the person below you on the list \n- when the list is over, it gets reshuffled \n- while you wait for games, play with anyone else or just watch the stream \n- and if you want to leave, type {rm \n- you can join at any time and leave at any time!'''
     ]
 
     def __list__(self) -> list:

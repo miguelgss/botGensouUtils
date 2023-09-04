@@ -18,8 +18,7 @@ class Responses():
         return commands.addUsersToList(self.Filas, [ctx.message.author])
 
     def addNamesToList(self, ctx, users):
-        return commands.addUsersToList(self.Filas, users)
-        #return commands.addToList(self.Filas, self.handle_response_msg(ctx.message.content))    
+        return commands.addUsersToList(self.Filas, users) 
 
     def addNewList(self, ctx, users):
         return commands.appendNewList(self.Filas, users)        
@@ -59,6 +58,9 @@ class Responses():
 
     def goodGames(self, ctx):
         return commands.advanceListStatus(self.Filas, ctx)
+
+    def skipMatch(self, number):
+        return commands.skipListStatus(self.Filas, number)
 
     def startList(self):
         return commands.startList(self.Filas)

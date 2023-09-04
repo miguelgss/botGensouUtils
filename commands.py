@@ -80,6 +80,42 @@ def advanceListStatus(filas, ctx):
     except Exception as e:
         raise e
 
+def skipListStatus(filas, index = 1):
+    index -= 1
+    try:
+        for i, jogador in enumerate(filas.groupList[index]):
+            if(jogador.lutando):
+                if(filas.groupList[index].index(jogador) == 0):
+                    filas.groupList[index][i].lutando = False
+                    if(len(filas.groupList[index]) > 2):
+                        filas.groupList[index][i+2].lutando = True
+                    else:
+                        stopList(filas, index)
+                        return f"Partidas da filas.groupList[index] {index+1} finalizadas. \n"
+                    break
+                elif(filas.groupList[index].index(jogador) == (len(filas.groupList[index])-1) or (filas.groupList[index].index(jogador)+1 == (len(filas.groupList[index])-1) and filas.groupList[index][i+1].lutando)):
+                    stopList(filas, index)
+                    return f"Partidas da Lista {index+1} finalizadas. \n"
+                elif(filas.groupList[index].index(jogador) != 0 and filas.groupList[index][i-1].lutando == True):
+                    filas.groupList[index][i-1].lutando = False
+                    filas.groupList[index][i+1].lutando = True
+                    break
+                elif(filas.groupList[index].index(jogador) > 0 and jogador.lutando and filas.groupList[index][i+1].lutando):
+                    filas.groupList[index][i].lutando = False
+                    filas.groupList[index][i+2].lutando = True
+                    break
+        lutandoAgora = list(filter(lambda x: x.lutando==True, filas.groupList[index]))
+
+        filas.groupList[index] = filas.groupList[index]
+
+        if(len(lutandoAgora) > 0):
+            return "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
+        else:
+            return f"Não há ninguém lutando na Lista {index+1}. \n"
+            
+    except Exception as e:
+        raise e
+
 def startList(filas):
     msgRetorno = ""
     try:

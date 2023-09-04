@@ -18,4 +18,3 @@ class Jogador():
             return True
         else:
             return False
-    #TODO: Registrar essa classe na lista ao invés de apenas o texto.
