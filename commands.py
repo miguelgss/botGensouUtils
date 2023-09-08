@@ -9,7 +9,7 @@ def toggleListStatus(filas):
     filas.isGroupListLocked = not filas.isGroupListLocked
     if (not filas.isGroupListLocked):
         filas.waitList
-        addToList(filas, filas.waitList)
+        addUsersToList(filas, filas.waitList)
         filas.waitList = []
     return StatusLista.Bloqueada.value if filas.isGroupListLocked else StatusLista.Desbloqueada.value
 
@@ -306,7 +306,7 @@ def qbgShuffleList(filas, shuffleOrReShuffle):
                     except Exception as e:
                         continue
             random.shuffle(allListPlayers)
-            addToList(filas,allListPlayers)
+            addUsersToList(filas,allListPlayers)
 
         if(filas.isGroupListLocked):
             toggleListStatus(filas)
