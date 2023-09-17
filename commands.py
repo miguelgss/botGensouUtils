@@ -3,8 +3,6 @@ from errors import ExpectedException
 from enums import ErrorMessages, StatusLista
 from classes.jogador import Jogador
 
-#TODO: Registrar a classe 'Jogador" na lista ao invés do nome em texto.
-
 def toggleListStatus(filas):
     filas.isGroupListLocked = not filas.isGroupListLocked
     if (not filas.isGroupListLocked):
@@ -66,16 +64,17 @@ def advanceListStatus(filas, ctx):
 
             if(ctxAuthorEqualsPlayerFighting):
                 if(len(lutandoAgora) > 0):
-                    msgRetorno += "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
+                    msgRetorno += f"Lista {index+1}: <@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
                 else:
                     msgRetorno += f"Não há ninguém lutando na Lista {index+1}. \n"
             elif(len(lutandoAgora) > 0):
-                msgRetorno += f"Quem está lutando agora são os jogadores {lutandoAgora[0].nome} e {lutandoAgora[1].nome}. Espere a sua vez! \n"
+                msgRetorno += f"Lista {index+1}: Quem está lutando agora são os jogadores {lutandoAgora[0].nome} e {lutandoAgora[1].nome}. \n"
             else:
                 msgRetorno += f"Não há ninguém lutando na Lista {index+1}. \n"
             
             ctxAuthorEqualsPlayerFighting = False        
-            
+
+        manageListTxtFile(filas)
         return msgRetorno
     except Exception as e:
         raise e
@@ -108,11 +107,31 @@ def skipListStatus(filas, index = 1):
 
         filas.groupList[index] = filas.groupList[index]
 
+        manageListTxtFile(filas)
         if(len(lutandoAgora) > 0):
             return "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
         else:
             return f"Não há ninguém lutando na Lista {index+1}. \n"
             
+    except Exception as e:
+        raise e
+
+def togglePlayerStatus(filas, users):
+    msgsLista = ''
+    try:
+        for user in users:
+            jogador = user if isinstance(user, Jogador) else Jogador(user.id, user.name)
+
+            countNamesList = []
+            jaEstaNaLista = False
+            indexLista = 0
+            for index, lista in enumerate(filas.groupList):
+                if jogador in lista:
+                    lista[lista.index(jogador)].lutando = not lista[lista.index(jogador)].lutando
+                    msgsLista += f"{jogador.nome} agora está lutando!" if lista[lista.index(jogador)].lutando else f"{jogador.nome} não está lutando mais!"   
+
+        manageListTxtFile(filas)
+        return msgsLista 
     except Exception as e:
         raise e
 
@@ -129,6 +148,8 @@ def startList(filas):
                 filas.groupList[index][0].lutando = True
                 filas.groupList[index][1].lutando = True
                 msgRetorno += "<@" + str(filas.groupList[index][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[index][1].idJogador) + "> \n"
+
+        manageListTxtFile(filas)
         return msgRetorno
     except Exception as e:
         raise e
@@ -140,6 +161,7 @@ def stopAllList(filas):
                 lista[i].lutando = False
 
             filas.groupList[index] = lista
+        manageListTxtFile(filas)
         return "Todas as listas foram paradas."
 
     except Exception as e:
@@ -151,9 +173,9 @@ def stopList(filas, index):
             filas.groupList[index][i].lutando = False
 
             filas.groupList[index] = filas.groupList[index]
+        manageListTxtFile(filas)
     except Exception as e:
         raise e
-
 
 # Criação, separação e exclusão de listas
 
@@ -324,8 +346,11 @@ def removeFromList(filas, users):
             jogador = user if isinstance(user, Jogador) else Jogador(user.id, user.name)
 
             # Remove o nome caso esteja preente em alguma das listas
-            for lista in filas.groupList:
+            for index, lista in enumerate(filas.groupList):
                 try:
+                    if(lista[lista.index(jogador)].lutando):
+                        msgsLista += f"{jogador.nome} ainda está lutando!"
+                        continue
                     lista.remove(jogador)
                     msgsLista += jogador.nome + " foi removido! \n"
                 except Exception as e:
@@ -400,6 +425,25 @@ def manageListTxtFile(filas):
             posCount += 1
         with open('listOBS' + str(index+1) + '.txt', 'w', encoding="utf-8") as file:
             file.write(textoLista)
+    
+    manageBackupTxtFile(filas)
+
+def manageBackupTxtFile(filas):
+    textoBackup = ''
+    for index, lista in enumerate(filas.groupList):
+        textoBackup += f"Membros lista {index+1}: "
+        for jogador in lista:
+            textoBackup += f"{jogador.nome} "
+        lutandoAgora = list(filter(lambda x: x.lutando==True, lista))
+        if(len(lutandoAgora) > 0):
+            textoBackup += f"\nEstavam lutando na lista {index+1}: "
+            for jogador in lutandoAgora:
+                textoBackup += f"{jogador.nome} "
+
+        textoBackup += "\n\n"
+
+    with open('backup.txt', 'w', encoding="utf-8") as file:
+        file.write(textoBackup)
 
 def manageDeletedListTxtFile(removedIndex):
     with open('listOBS' + str(removedIndex+1) + '.txt', 'w', encoding="utf-8") as file:

@@ -62,6 +62,9 @@ class Responses():
     def skipMatch(self, number):
         return commands.skipListStatus(self.Filas, number)
 
+    def togglePlayerStatus(self, users):
+        return commands.togglePlayerStatus(self.Filas, users)
+
     def startList(self):
         return commands.startList(self.Filas)
 

@@ -14,7 +14,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-versaoAtual = 220;
+versaoAtual = 230
 
 def run_discord_bot():
 
@@ -232,6 +232,15 @@ def run_discord_bot():
     async def AvancarLista(ctx, number = 1):
         await ctx.send(
             responses.skipMatch(number)
+        )
+
+    @bot.command(aliases=CommandNames.MudarEstadoJogador)
+    @commands.has_any_role(*roles)
+    async def MudarEstadoJogador(ctx, *users: discord.Member):
+        await ctx.send(
+            embed=discord.Embed(title=f"{CommandNames.MudarEstadoJogador[0]}",
+            description=responses.togglePlayerStatus(users),
+            color=Color.Sucesso.value)
         )
     ###---
 

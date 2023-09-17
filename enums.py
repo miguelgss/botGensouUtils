@@ -42,6 +42,7 @@ class CommandNames(list, Enum):
 
     BonsJogos = ['gg', 'ggs']
     AvancarLista = ['avançarlista', 'avançar', 'pular', 'skip']
+    MudarEstadoJogador = ['mudar', 'mudarestado', 'me', 'toggle']
     IniciarLista = ['iniciarlista', 'iniciar', 'i']
     PararLista = ['pararlista', 'parar']
 
@@ -73,7 +74,8 @@ class CommandNames(list, Enum):
         f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
         f"**{IniciarLista}** - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!';",
         f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha;",
-        f"**{AvancarLista}** (Opcional - __NumeroLista__) - Avança a lista especificada. Caso nenhum número seja passado, o comando avançará a primeira lista."
+        f"**{AvancarLista}** (Opcional - __NumeroLista__) - Avança a lista especificada. Caso nenhum número seja passado, o comando avançará a primeira lista.",
+        f"**{MudarEstadoJogador}** - Recebe um ou mais usuários como argumento para mudar seu estado de 'LUTANDO!'"
     ]
 
     ajudaGringous = [
