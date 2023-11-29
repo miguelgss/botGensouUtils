@@ -3,6 +3,8 @@ import discord
 import re
 from discord.ext import commands
 import requests
+import tkinter as tk
+import webbrowser
 
 # Importação de arquivos
 from responses import responses
@@ -14,7 +16,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-versaoAtual = 230
+versaoAtual = 220
 
 def run_discord_bot():
 
@@ -26,6 +28,11 @@ def run_discord_bot():
             if re.search("token", line):
                 TOKEN = line.split(' ')[2]
 
+    def openBrowserWithUpdate():
+        import webbrowser
+        url = "https://github.com/miguelgss/botGensouUtils/releases"
+        webbrowser.open(url, new=0, autoraise=True)
+    
     @bot.event
     async def on_ready():
         try:
@@ -34,7 +41,42 @@ def run_discord_bot():
             versaoLatest = jsonConversion[0]['name'].replace('v','')
             versaoLatest = versaoLatest.replace('.','')
             if(versaoAtual < int(versaoLatest)):
-                print(f"Nova versão (v{versaoLatest}) disponível! Acesse https://github.com/miguelgss/botGensouUtils/releases para baixar.")
+                try:
+                    newVersionWindow = tk.Tk()
+                    newVersionWindow.title("Nova atualização disponível!")
+                    newVersionWindow.geometry("400x145")
+                    updateMessage = f"Nova versão (v{versaoLatest}) disponível! Acesse https://github.com/miguelgss/botGensouUtils/releases para baixar."
+                    updateLabel = tk.Label(
+                        text=updateMessage,
+                        wraplength=300
+                    )
+                    updateLabel.pack()
+
+                    buttonGetUpdate = tk.Button(
+                        text="Download",
+                        width=10,
+                        height=1,
+                        fg="black",
+                        bg=Color.VerdeLimaoHEX.value,
+                        command=openBrowserWithUpdate
+                    )
+
+                    buttonConfirm = tk.Button(
+                        text="Ignorar",
+                        width=10,
+                        height=1,
+                        fg="black",
+                        bg=Color.CinzaClaroHEX.value,
+                        command=newVersionWindow.destroy
+                    )
+
+                    buttonGetUpdate.pack()
+                    buttonConfirm.pack()
+                    newVersionWindow.mainloop()
+                except Exception as e:
+                    print(str(e))
+
+                print(updateMessage)
 
         except Exception as e:
             print(str(e))
@@ -109,6 +151,15 @@ def run_discord_bot():
             description=responses.lockUnlockGroupList(),
             color=Color.Sucesso.value)
         )
+
+    @bot.command(aliases=CommandNames.Loop)
+    @commands.has_any_role(*roles)
+    async def HabilitaDesabilitaLoop(ctx):
+        await ctx.send(
+            embed=discord.Embed(title=f"{CommandNames.Loop[0]}",
+            description=responses.loopUnloopLists(),
+            color=Color.Sucesso.value)
+        )    
         
     @bot.command(aliases=CommandNames.Adiciona)
     @commands.has_any_role(*roles)

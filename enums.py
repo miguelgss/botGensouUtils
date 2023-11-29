@@ -4,6 +4,8 @@ class Color(Enum):
     Erro = 0xEE2B3B
     Alerta = 0xFFC94D
     Sucesso = 0x81E052
+    VerdeLimaoHEX = "#78FB5C"
+    CinzaClaroHEX = "#D5D1C7"
 
 class ErrorMessages(Enum):
     SemPermissao = "Você não possui permissão para usar esse comando."
@@ -17,9 +19,11 @@ class ErrorMessages(Enum):
     def ListaJaIniciada(indexLista: int):
         return f"A Lista {indexLista} já foi iniciada!"
 
-class StatusLista(Enum):
+class StatusLista():
     Bloqueada = '🔒 Lista(s) bloqueada(s)!'
     Desbloqueada = '🔓 Lista(s) desbloqueada(s)!'
+    Loopando = '🔁 Lista(s) em loop! (O ÚLTIMO ENFRENTARÁ O PRIMEIRO!)'
+    SemLoop = '➡️ Lista(s) não irão loopar mais.'
 
 class CommandNames(list, Enum):
     Ajuda = ['help', 'h', 'ajuda']
@@ -38,6 +42,7 @@ class CommandNames(list, Enum):
     Move = ['move','m','mv']
     Trocar = ['troca', 't', 'tr']
     Bloquear = ['bloquear', 'b']
+    Loop = ['loop']
     Limpar = ['limpar', 'clear', 'c']
 
     BonsJogos = ['gg', 'ggs']
@@ -71,6 +76,7 @@ class CommandNames(list, Enum):
         f"**{Trocar} (Opcional - __NumeroLista__) __X__ (Opcional - __NumeroLista__) __Y__** - Troca um nome (posição X) com a posição especificada (Y)",
         "Exemplo: t 1 1 2 1 trocará as posições entre lista1-primeiroNome e lista2-primeiroNome;",
         f"**{Bloquear}** - Bloqueia/desbloqueia as listas. Quando bloqueado, cria a lista de espera. Quando desbloqueado, adiciona a lista os nomes em espera;",
+        f"**{Loop}** - Loopa/remove o loop das listas. Enquanto estiver loopando, o último jogador irá enfrentar o primeiro;",
         f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
         f"**{IniciarLista}** - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!';",
         f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha;",

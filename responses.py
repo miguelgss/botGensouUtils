@@ -33,7 +33,10 @@ class Responses():
         return commands.removeList(self.Filas, int(number))        
     
     def lockUnlockGroupList(self):
-        return commands.toggleListStatus(self.Filas)
+        return commands.toggleIsGroupListLocked(self.Filas)
+    
+    def loopUnloopLists(self):
+        return commands.toggleAreListsLooping(self.Filas)
 
     def defaultShuffle(self):
         return commands.qbgShuffleList(self.Filas, -1)

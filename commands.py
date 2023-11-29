@@ -3,16 +3,21 @@ from errors import ExpectedException
 from enums import ErrorMessages, StatusLista
 from classes.jogador import Jogador
 
-def toggleListStatus(filas):
+def toggleIsGroupListLocked(filas):
     filas.isGroupListLocked = not filas.isGroupListLocked
     if (not filas.isGroupListLocked):
         filas.waitList
         addUsersToList(filas, filas.waitList)
         filas.waitList = []
-    return StatusLista.Bloqueada.value if filas.isGroupListLocked else StatusLista.Desbloqueada.value
+    return StatusLista.Bloqueada if filas.isGroupListLocked else StatusLista.Desbloqueada
+
+def toggleAreListsLooping(filas):
+    filas.areListsLooping = not filas.areListsLooping
+    return StatusLista.Loopando if filas.areListsLooping else StatusLista.SemLoop
 
 def showList(filas) -> str:
-    textoLista = StatusLista.Bloqueada.value + "\n\n" if filas.isGroupListLocked else ''
+    textoLista = StatusLista.Bloqueada + "\n\n" if filas.isGroupListLocked else ''
+    textoLista += StatusLista.Loopando + "\n\n" if filas.areListsLooping else ''
     if(len(filas.groupList) < 1):
         raise ExpectedException("Não existem listas no momento. Por favor, utilize o comando 'adiciona' ou 'adicionalista' para gerar uma nova lista.")
     for index, lista in enumerate(filas.groupList):
@@ -42,7 +47,10 @@ def advanceListStatus(filas, ctx):
                 if(jogador.lutando and (jogador.idJogador == ctx.author.id or jogador.nome == ctx.author.name)):
                     ctxAuthorEqualsPlayerFighting = True
 
-                    if(lista.index(jogador) == 0):
+                    if(lista[len(lista)-1].lutando and lista[0].lutando):
+                        stopList(filas, index)
+                        msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
+                    elif(lista.index(jogador) == 0):
                         lista[i].lutando = False
                         if(len(lista) > 2):
                             lista[i+2].lutando = True
@@ -50,8 +58,12 @@ def advanceListStatus(filas, ctx):
                             stopList(filas, index)
                             msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
                     elif(lista.index(jogador) == (len(lista)-1) or (lista.index(jogador)+1 == (len(lista)-1) and lista[i+1].lutando)):
-                        stopList(filas, index)
-                        msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
+                        if(filas.areListsLooping):
+                            lista[i].lutando = False
+                            lista[0].lutando = True
+                        else:
+                            stopList(filas, index)
+                            msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
                     elif(lista.index(jogador) != 0 and lista[i-1].lutando == True):
                         lista[i-1].lutando = False
                         lista[i+1].lutando = True
@@ -81,20 +93,30 @@ def advanceListStatus(filas, ctx):
 
 def skipListStatus(filas, index = 1):
     index -= 1
+    msgRetorno = ""
     try:
         for i, jogador in enumerate(filas.groupList[index]):
             if(jogador.lutando):
-                if(filas.groupList[index].index(jogador) == 0):
+                if(filas.groupList[index][len(filas.groupList[index])-1].lutando and filas.groupList[index][0].lutando):
+                    stopList(filas, index)
+                    msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
+                    break
+                elif(filas.groupList[index].index(jogador) == 0):
                     filas.groupList[index][i].lutando = False
                     if(len(filas.groupList[index]) > 2):
                         filas.groupList[index][i+2].lutando = True
                     else:
                         stopList(filas, index)
-                        return f"Partidas da filas.groupList[index] {index+1} finalizadas. \n"
+                        msgRetorno += f"Partidas da filas.groupList[index] {index+1} finalizadas. \n"
                     break
                 elif(filas.groupList[index].index(jogador) == (len(filas.groupList[index])-1) or (filas.groupList[index].index(jogador)+1 == (len(filas.groupList[index])-1) and filas.groupList[index][i+1].lutando)):
-                    stopList(filas, index)
-                    return f"Partidas da Lista {index+1} finalizadas. \n"
+                    if(filas.areListsLooping):
+                            filas.groupList[index][i].lutando = False
+                            filas.groupList[index][0].lutando = True
+                    else:
+                        stopList(filas, index)
+                        msgRetorno += f"Partidas da Lista {index+1} finalizadas. \n"
+                    break
                 elif(filas.groupList[index].index(jogador) != 0 and filas.groupList[index][i-1].lutando == True):
                     filas.groupList[index][i-1].lutando = False
                     filas.groupList[index][i+1].lutando = True
@@ -105,14 +127,13 @@ def skipListStatus(filas, index = 1):
                     break
         lutandoAgora = list(filter(lambda x: x.lutando==True, filas.groupList[index]))
 
-        filas.groupList[index] = filas.groupList[index]
-
         manageListTxtFile(filas)
         if(len(lutandoAgora) > 0):
-            return "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
+            msgRetorno += f"Lista {index+1}:" + "<@" + str(lutandoAgora[0].idJogador) + ">" + " VS " + "<@" + str(lutandoAgora[1].idJogador) + "> \n"
         else:
-            return f"Não há ninguém lutando na Lista {index+1}. \n"
-            
+            msgRetorno += f"Não há ninguém lutando na Lista {index+1}. \n"
+        
+        return msgRetorno
     except Exception as e:
         raise e
 
@@ -228,19 +249,22 @@ def splitList(filas, listIndex = 1):
 
 def removeList(filas, listIndex):
     listIndex -= 1
+    msgReturn = ""
     try:
-        if(len(filas.groupList) > 1):
+        manageDeletedListTxtFile(listIndex)
+        msgReturn += "O arquivo da lista selecionada foi limpado; \n"
+        try:
             listCopy = filas.groupList[listIndex].copy()
             filas.groupList.pop(listIndex)
 
             addUsersToList(filas, listCopy)
+            msgReturn += f'lista {listIndex + 1} foi removida. Os membros contidos nela foram movidos para outra(s) lista(s).'
+        except IndexError as ie:
+            msgReturn += "A lista especificada não existe no momento."
 
-            manageDeletedListTxtFile(listIndex)
-            return f'lista {listIndex + 1} foi removida. Os membros contidos nela foram movidos para outra(s) lista(s).'
-        else:
-            raise ExpectedException(ErrorMessages.SemListaApagavel.value)
-    except ExpectedException as ee:
-        raise ee
+        return msgReturn
+    except IndexError as ie:
+        raise "Não foi possível remover o nome solicitado. Por favor, verifique a escrita ou o que há na lista e tente novamente."
     except Exception as e:
         raise e
 
@@ -303,35 +327,29 @@ def addUsersToList(filas, users):
 
 def qbgShuffleList(filas, shuffleOrReShuffle):
     try:
+        listPlayersOnTop = []
         if(shuffleOrReShuffle == -1 or shuffleOrReShuffle == 0):
             for index, lista in enumerate(filas.groupList):
-                newlist = [lista[shuffleOrReShuffle]]
-                lista.remove(lista[shuffleOrReShuffle])
-
-                if(len(lista) > 1):
-                    random.shuffle(lista)
-                
-                for element in lista:
-                    newlist.append(element)
-                
-                filas.groupList[index] = newlist.copy()
-        else:
-            allListPlayers = []
-            numLists = len(filas.groupList)
-            for index, lista in enumerate(filas.groupList):
-                for element in lista:
-                    allListPlayers.append(element)
-            for name in allListPlayers:
-                for lista in filas.groupList:
-                    try:
-                        lista.remove(name)
-                    except Exception as e:
-                        continue
-            random.shuffle(allListPlayers)
-            addUsersToList(filas,allListPlayers)
+                listPlayersOnTop.append(lista[shuffleOrReShuffle])
+                filas.groupList[index].remove(lista[shuffleOrReShuffle])
+        
+        allListPlayers = []
+        numLists = len(filas.groupList)
+        for index, lista in enumerate(filas.groupList):
+            for element in lista:
+                allListPlayers.append(element)
+        for name in allListPlayers:
+            for lista in filas.groupList:
+                try:
+                    lista.remove(name)
+                except Exception as e:
+                    continue
+        random.shuffle(allListPlayers)
+        addUsersToList(filas, listPlayersOnTop)
+        addUsersToList(filas,allListPlayers)
 
         if(filas.isGroupListLocked):
-            toggleListStatus(filas)
+            toggleIsGroupListLocked(filas)
 
         manageListTxtFile(filas)
         return showList(filas)
