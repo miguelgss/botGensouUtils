@@ -37,11 +37,11 @@ class TestCommands(unittest.TestCase):
         TrocouInicioComFim = FilaMock.groupList[0][3].nome == GroupListAnterior[0].nome and FilaMock.groupList[0][0].nome == GroupListAnterior[3].nome
         self.assertTrue(TrocouInicioComFim)
 
-    def test_toggleListStatus(self):
-        commands.toggleListStatus(FilaMock)
+    def test_toggleIsGroupListLocked(self):
+        commands.toggleIsGroupListLocked(FilaMock)
         self.assertTrue(FilaMock.isGroupListLocked)
         commands.addUsersToList(FilaMock, UsersInputAddWaitlistMock)
-        commands.toggleListStatus(FilaMock)
+        commands.toggleIsGroupListLocked(FilaMock)
         self.assertFalse(FilaMock.isGroupListLocked)
 
         for jogador in UsersInputAddWaitlistMock:
