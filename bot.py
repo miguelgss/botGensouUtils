@@ -13,10 +13,11 @@ from errors import ExpectedException
 
 intents =  discord.Intents.default()
 intents.message_content = True
+
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-versaoAtual = 240
+versaoAtual = 241
 
 def run_discord_bot():
 
@@ -301,32 +302,38 @@ def run_discord_bot():
         print(error)
         if isinstance(error, commands.errors.MissingAnyRole):
             await ctx.send(
-                embed=discord.Embed(title="Alerta:",
+                embed=discord.Embed(title="⚠️ Alerta:",
                 description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.SemPermissao.value,
                 color=Color.Alerta.value)
             )
         elif isinstance(error, commands.errors.CommandNotFound):
             await ctx.send(
-                embed=discord.Embed(title="Alerta:",
+                embed=discord.Embed(title="⚠️ Alerta:",
                 description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.ComandoNaoEncontrado.value,
                 color=Color.Alerta.value)
             )
         elif isinstance(error, commands.errors.MemberNotFound):
             await ctx.send(
-                embed=discord.Embed(title="Alerta:",
+                embed=discord.Embed(title="⚠️ Alerta:",
                 description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.UsuarioNaoEncontrado.value,
                 color=Color.Alerta.value)
             )
         else:
             await ctx.send(
-                embed=discord.Embed(title="Erro:",
+                embed=discord.Embed(title="🚫 Erro:",
                 description=f'De: {ctx.message.author.name}; Comando: {ctx.message.content}; \n\n' + str(error),
                 color=Color.Erro.value)
             )
         print(str(error)) 
 
     # Inicia o bot
-    bot.run(TOKEN)
+    try:
+        bot.run(TOKEN)
+    except Exception as e:
+        if isinstance(e, discord.errors.LoginFailure):
+            print(ErrorMessages.TokenIncorreto.value + "\n" + ErrorMessages.InvalidToken.value)
+        else:
+            print(e)
 
 ###--- Verifica Permissões
 

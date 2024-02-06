@@ -12,6 +12,10 @@ class ErrorMessages(Enum):
     ComandoNaoEncontrado = "Comando não encontrado. Use {h para verificar os comandos disponíveis."
     UsuarioNaoEncontrado = "Usuário não encontrado. Para adicionar ou remover, é necessário _pingar_ o usuário que deseja adicionar ou remover da lista ou, caso queira entrar ou sair, utilizar o comando addme ou rme."
     SemListaApagavel = "Não é possível apagar uma lista quando há apenas uma!"
+    TokenIncorreto = "O token informado no 'config.txt' não é válido. Verifique os dados do arquivo e tente novamente."
+
+    # English
+    InvalidToken = "The token entered in 'config.txt' is not valid. Please check the file data and try again." 
 
     def SemJogadoresSuficientes(indexLista: int):
         return f"Não é possível iniciar a Lista {indexLista} com menos de dois de jogadores"

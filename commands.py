@@ -367,7 +367,7 @@ def removeFromList(filas, users):
             for index, lista in enumerate(filas.groupList):
                 try:
                     if(lista[lista.index(jogador)].lutando):
-                        msgsLista += f"{jogador.nome} ainda está lutando!"
+                        msgsLista += f"# ⚠️ <@{jogador.idJogador}> \n ## NÃO PODE SAIR POIS AINDA ESTÁ LUTANDO! \n ## CAN'T LEAVE BECAUSE YOU'RE STILL FIGHTING!"
                         continue
                     lista.remove(jogador)
                     msgsLista += jogador.nome + " foi removido! \n"
@@ -437,9 +437,13 @@ def manageListTxtFile(filas):
     for index, lista in enumerate(filas.groupList):
         textoLista = ''
         textoLista += "Lista " + str(index+1) + ": \n"
+
         posCount = 1
         for jogador in lista:
-            textoLista += str(posCount) + " - " + jogador.nome + "; \n"
+            if(jogador.lutando):
+                textoLista += "*" + str(posCount) + " - " + jogador.nome + "; \n"
+            else:
+                textoLista += str(posCount) + " - " + jogador.nome + "; \n"
             posCount += 1
         with open('listOBS' + str(index+1) + '.txt', 'w', encoding="utf-8") as file:
             file.write(textoLista)
