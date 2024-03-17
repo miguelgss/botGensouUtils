@@ -16,6 +16,7 @@ Caso só queira executar, siga as configurações abaixo e obtenha o executável
 ## Configurações
 Também é necessário criar um arquivo com nome "config.txt" na pasta, incluindo nele a linha:
 - token = SeuToken
+
 O "SeuToken" é o token gerado pelo seu bot de discord.
 
 A seguinte linha é mandatória a partir da versão 2.0.0. Caso não seja informado, os comandos com permissionamento não poderão ser utilizados:
