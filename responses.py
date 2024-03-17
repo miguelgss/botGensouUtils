@@ -68,8 +68,8 @@ class Responses():
     def togglePlayerStatus(self, users):
         return commands.togglePlayerStatus(self.Filas, users)
 
-    def startList(self):
-        return commands.startList(self.Filas)
+    def startList(self, number):
+        return commands.startList(self.Filas, number)
 
     def stopList(self):
         return commands.stopAllList(self.Filas)

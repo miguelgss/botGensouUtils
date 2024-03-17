@@ -82,7 +82,7 @@ class CommandNames(list, Enum):
         f"**{Bloquear}** - Bloqueia/desbloqueia as listas. Quando bloqueado, cria a lista de espera. Quando desbloqueado, adiciona a lista os nomes em espera;",
         f"**{Loop}** - Loopa/remove o loop das listas. Enquanto estiver loopando, o último jogador irá enfrentar o primeiro;",
         f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
-        f"**{IniciarLista}** - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!';",
+        f"**{IniciarLista}** (Opcional - __N__) - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!'. **É possível especificar a lista individualmente a ser iniciada**.",
         f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha;",
         f"**{AvancarLista}** (Opcional - __NumeroLista__) - Avança a lista especificada. Caso nenhum número seja passado, o comando avançará a primeira lista.",
         f"**{MudarEstadoJogador}** - Recebe um ou mais usuários como argumento para mudar seu estado de 'LUTANDO!'"

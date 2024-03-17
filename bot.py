@@ -17,7 +17,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-versaoAtual = 241
+versaoAtual = 242
 
 def run_discord_bot():
 
@@ -265,9 +265,9 @@ def run_discord_bot():
 
     @bot.command(aliases=CommandNames.IniciarLista)
     @commands.has_any_role(*roles)
-    async def IniciarLista(ctx):
+    async def IniciarLista(ctx, number = 0):
         await ctx.send(
-            responses.startList()
+            responses.startList(number)
             )
 
     @bot.command(aliases=CommandNames.PararLista)

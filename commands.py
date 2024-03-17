@@ -156,20 +156,32 @@ def togglePlayerStatus(filas, users):
     except Exception as e:
         raise e
 
-def startList(filas):
+def startList(filas, indexFila = 0):
+    indexFila -= 1
     msgRetorno = ""
     try:
-        stopAllList(filas)
-        for index, lista in enumerate(filas.groupList):
-            if(len(lista) < 2):
+        if(indexFila < 0):
+            stopAllList(filas)
+            for index, lista in enumerate(filas.groupList):
+                if(len(lista) < 2):
+                    msgRetorno += ErrorMessages.SemJogadoresSuficientes(index+1) + "\n"
+                elif(any(list(filter(lambda x: x.lutando==True, lista)))):
+                    msgRetorno += ErrorMessages.ListaJaIniciada(index+1) + "\n"
+                else:
+                    filas.groupList[index][0].lutando = True
+                    filas.groupList[index][1].lutando = True
+                    msgRetorno += "<@" + str(filas.groupList[index][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[index][1].idJogador) + "> \n"
+        else:
+            stopList(filas, indexFila)
+            if(len(filas.groupList[indexFila]) < 2):
                 msgRetorno += ErrorMessages.SemJogadoresSuficientes(index+1) + "\n"
-            elif(any(list(filter(lambda x: x.lutando==True, lista)))):
+            elif(any(list(filter(lambda x: x.lutando==True, filas.groupList[indexFila])))):
                 msgRetorno += ErrorMessages.ListaJaIniciada(index+1) + "\n"
             else:
-                filas.groupList[index][0].lutando = True
-                filas.groupList[index][1].lutando = True
-                msgRetorno += "<@" + str(filas.groupList[index][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[index][1].idJogador) + "> \n"
-
+                filas.groupList[indexFila][0].lutando = True
+                filas.groupList[indexFila][1].lutando = True
+                msgRetorno += "<@" + str(filas.groupList[indexFila][0].idJogador) + ">" + " VS " + "<@" + str(filas.groupList[indexFila][1].idJogador) + "> \n"
+                
         manageListTxtFile(filas)
         return msgRetorno
     except Exception as e:
@@ -234,6 +246,9 @@ def splitList(filas, listIndex = 1):
     msgLista = 'Nova lista criada! \n'
     listIndex -= 1
     try:
+        if(filas.isGroupListLocked):
+            toggleIsGroupListLocked(filas)
+
         newlist = filas.groupList[listIndex][(len(filas.groupList[listIndex])//2):]
         removeFromList(filas, newlist)
 
