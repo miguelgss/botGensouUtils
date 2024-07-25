@@ -12,6 +12,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
+    - name: Install TK
+      run: apt-get install python3-tk
     - name: Install dependencies
       run: pip install -r src/requirements.txt
     - name: Run script

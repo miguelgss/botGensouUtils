@@ -17,9 +17,17 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-versaoAtual_1 = 2
-versaoAtual_2 = 4
-versaoAtual_3 = 2
+v = [2, 4, 2]
+
+def check_need_update(v1:list, v2:list):
+    length = max(len(v1), len(v2))
+
+    for i in range(length):
+        if v1[i] > int(v2[i]):
+            return False
+        if v1[i] < int(v2[i]):
+            return True
+    return False
 
 def run_discord_bot():
 
@@ -43,14 +51,12 @@ def run_discord_bot():
             jsonConversion = response.json()
             versaoLatest = str(jsonConversion[0]['name'].replace('v',''))
             versaoLatest = versaoLatest.split(".")
-            if(versaoAtual_1 < int(versaoLatest[0]) or 
-            versaoAtual_2 < int(versaoLatest[1]) or
-            versaoAtual_3 < int(versaoLatest[2])):
+            if(check_need_update(v, versaoLatest)):
                 try:
                     newVersionWindow = tk.Tk()
                     newVersionWindow.title("Nova atualização disponível!")
                     newVersionWindow.geometry("400x145")
-                    updateMessage = f"Nova versão (v{versaoLatest}) disponível! Acesse https://github.com/miguelgss/botGensouUtils/releases para baixar."
+                    updateMessage = f"Nova versão (v{versaoLatest[0]}.{versaoLatest[1]}.{versaoLatest[2]}) disponível! Acesse https://github.com/miguelgss/botGensouUtils/releases para baixar."
                     updateLabel = tk.Label(
                         text=updateMessage,
                         wraplength=300
@@ -86,7 +92,7 @@ def run_discord_bot():
         except Exception as e:
             print("Ocorreu um erro ao verificar se há novas versões... \n" + str(e))
 
-        print(f'Versão atual: v{versaoAtual_1}.{versaoAtual_2}.{versaoAtual_3}')            
+        print(f'Versão atual: v{v[0]}.{v[1]}.{v[2]}')
         print(f'{bot.user} ligou e está pronto para ser utilizado!' + " Use {h para ver os comandos disponíveis.")
 
     ###--- COMANDOS LIVRES
