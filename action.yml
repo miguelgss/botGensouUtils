@@ -1,0 +1,25 @@
+name: PyInstaller Windows
+  uses: JackMcKew/pyinstaller-action-windows@v0.1.2
+inputs:
+  path:
+    description: 'Directory containing source code (optional requirements.txt).'
+    required: True
+    default: "."
+  spec:
+    description: 'Specify a file path for .spec file'
+    required: False
+    default: "specs"
+  requirements:
+    description: 'Specify a file path for requirements.txt file'
+    required: False
+    default: "requirements.txt"
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.path }}
+    - ${{ inputs.pypi_url }}
+    - ${{ inputs.pypi_index_url }}
+    - ${{ inputs.spec }}
+    - ${{ inputs.requirements }}    

@@ -2,6 +2,6 @@ __pycache__
 *.txt
 build
 dist
-*.spec
 specs
 !requirements.txt
+venv

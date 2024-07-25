@@ -1,7 +1,7 @@
 # Bot de lista para o QBGS - Quinta Batalhas Gensou Semanais
 
 ## Sobre
-Esse é um projeto simples que apoiará a manutenção de um lobby de jogadores orientado por uma lista. **Os dados só permanecem durante o tempo de execução.**
+Esse é um projeto simples que apoiará a manutenção de um lobby de jogadores. **Os dados só permanecem durante o tempo de execução.**
 O bot originou como um apoio pro evento semanal de Touhou Hisoutensoku no Gensou Arena, hostado em nosso [servidor do discord](https://discord.gg/pXyRx3ed) e transmitido no [canal da twitch](https://www.twitch.tv/gensouarena).
 
 ## Ferramentas Necessárias

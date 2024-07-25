@@ -17,7 +17,9 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-versaoAtual = 242
+versaoAtual_1 = 2
+versaoAtual_2 = 4
+versaoAtual_3 = 2
 
 def run_discord_bot():
 
@@ -39,9 +41,11 @@ def run_discord_bot():
         try:
             response = requests.get("https://api.github.com/repos/miguelgss/botGensouUtils/tags")
             jsonConversion = response.json()
-            versaoLatest = jsonConversion[0]['name'].replace('v','')
-            versaoLatest = versaoLatest.replace('.','')
-            if(versaoAtual < int(versaoLatest)):
+            versaoLatest = str(jsonConversion[0]['name'].replace('v',''))
+            versaoLatest = versaoLatest.split(".")
+            if(versaoAtual_1 < int(versaoLatest[0]) or 
+            versaoAtual_2 < int(versaoLatest[1]) or
+            versaoAtual_3 < int(versaoLatest[2])):
                 try:
                     newVersionWindow = tk.Tk()
                     newVersionWindow.title("Nova atualização disponível!")
@@ -80,9 +84,9 @@ def run_discord_bot():
                 print(updateMessage)
 
         except Exception as e:
-            print(str(e))
+            print("Ocorreu um erro ao verificar se há novas versões... \n" + str(e))
 
-        print(f'Versão atual: v{versaoAtual}')            
+        print(f'Versão atual: v{versaoAtual_1}.{versaoAtual_2}.{versaoAtual_3}')            
         print(f'{bot.user} ligou e está pronto para ser utilizado!' + " Use {h para ver os comandos disponíveis.")
 
     ###--- COMANDOS LIVRES
