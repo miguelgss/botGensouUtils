@@ -23,3 +23,6 @@ jobs:
       with:
         name: name-of-artifact
         path: src/dist/windows
+    - name: tests
+      run: |
+        python src/testCommands.py
