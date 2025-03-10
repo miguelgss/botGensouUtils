@@ -1,6 +1,7 @@
 import re
 import commands
 from classes.filasMantenedor import FilasMantenedor
+from constantes import numeros
 
 class Responses():
     def __init__(self):
@@ -39,13 +40,13 @@ class Responses():
         return commands.toggleAreListsLooping(self.Filas)
 
     def defaultShuffle(self):
-        return commands.qbgShuffleList(self.Filas, -1)
+        return commands.qbgShuffleList(self.Filas, numeros.DEFAULT_SHUFFLE)
 
     def reShuffle(self):
-        return commands.qbgShuffleList(self.Filas, 0)
+        return commands.qbgShuffleList(self.Filas, numeros.RESHUFFLE)
     
     def shuffleEverything(self):
-        return commands.qbgShuffleList(self.Filas, 2)
+        return commands.qbgShuffleList(self.Filas, numeros.SHUFFLE_EVERYTHING)
 
     def splitList(self, ctx = None):
         if (ctx != None and len(self.handle_response_msg(ctx.message.content)) > 0):

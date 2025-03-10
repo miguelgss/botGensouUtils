@@ -70,9 +70,35 @@ class TestCommands(unittest.TestCase):
         filaMock = FilasMantenedor()
         filaMock.groupList[0] = ListaJogadoresSeparavel.copy()
         commands.splitList(filaMock)
-        
+
         self.assertTrue(filaMock.groupList[0] == ListaJogadoresSeparavel[0:5])
         self.assertTrue(filaMock.groupList[1] == ListaJogadoresSeparavel[5:11])
+
+    def test_separaLista_IsGroupListLocked_AddPlayersWaitingToTop(self):
+        ListaJogadoresSeparavel = [
+            Jogador("1", "A"),
+            Jogador("2", "B"),
+            Jogador("3", "C"),
+            Jogador("4", "D"),
+            Jogador("5", "E"),
+            Jogador("6", "F"),
+            Jogador("7", "G"),
+            Jogador("8", "H"),
+            Jogador("9", "I"),
+            Jogador("10", "J"),
+            ]
+        filaMock = FilasMantenedor()
+        filaMock.isGroupListLocked = True
+        filaMock.groupList[0] = ListaJogadoresSeparavel.copy()
+
+        UsersInputAddWaitlistMock = [Jogador("900", "Lia"), Jogador("800", "Kret"), Jogador("700", "Looisin")]
+
+        commands.addUsersToList(filaMock, UsersInputAddWaitlistMock)
+        commands.splitList(filaMock)
+
+        self.assertTrue(UsersInputAddWaitlistMock[0] in filaMock.groupList[0][0:3])
+        self.assertTrue(UsersInputAddWaitlistMock[1] in filaMock.groupList[1][0:3])
+        self.assertTrue(UsersInputAddWaitlistMock[2] in filaMock.groupList[0][0:2])
 
 if __name__ == '__main__':
     unittest.main()

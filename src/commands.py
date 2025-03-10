@@ -2,12 +2,13 @@ import random
 from errors import ExpectedException
 from enums import ErrorMessages, StatusLista
 from classes.jogador import Jogador
+from constantes import numeros
 
-def toggleIsGroupListLocked(filas):
+def toggleIsGroupListLocked(filas, addStartOfList = False):
     filas.isGroupListLocked = not filas.isGroupListLocked
     if (not filas.isGroupListLocked):
         filas.waitList
-        addUsersToList(filas, filas.waitList)
+        addUsersToList(filas, filas.waitList, addStartOfList)
         filas.waitList = []
     return StatusLista.Bloqueada if filas.isGroupListLocked else StatusLista.Desbloqueada
 
@@ -246,14 +247,13 @@ def splitList(filas, listIndex = 1):
     msgLista = 'Nova lista criada! \n'
     listIndex -= 1
     try:
-        if(filas.isGroupListLocked):
-            toggleIsGroupListLocked(filas)
-
         newlist = filas.groupList[listIndex][(len(filas.groupList[listIndex])//2):]
         removeFromList(filas, newlist)
 
         filas.groupList.append(newlist)
 
+        if(filas.isGroupListLocked):
+            toggleIsGroupListLocked(filas, True)
         for jogador in newlist:
             msgLista += jogador.nome + " foi adicionado a nova lista! \n"
 
@@ -285,7 +285,7 @@ def removeList(filas, listIndex):
 
 # Manipulação dos nomes nas listas
 
-def addUsersToList(filas, users):
+def addUsersToList(filas, users, addStartOfList = False):
     msgsLista = ''
     try:
         if(filas.isGroupListLocked):
@@ -327,12 +327,18 @@ def addUsersToList(filas, users):
                         indexLista = index
                     countNamesList.append(len(lista))
                 
+                indexListaComMenosJogadores = countNamesList.index(min(countNamesList))
                 if(jaEstaNaLista):
                     msgsLista += jogador.nome + " já está na lista " + str(indexLista+1) + "! \n"
                 else:
-                    jogador.posicao = min(countNamesList)+1
-                    jogador.lista = countNamesList.index(min(countNamesList))+1
-                    filas.groupList[countNamesList.index(min(countNamesList))].append(jogador)
+                    if(not addStartOfList):
+                        filas.groupList[indexListaComMenosJogadores].append(jogador)
+                    else:
+                        jogadoresAtuais_SegundoPraFrente = filas.groupList[indexListaComMenosJogadores][1:]
+                        removeFromList(filas, jogadoresAtuais_SegundoPraFrente)
+                        filas.groupList[indexListaComMenosJogadores].append(jogador)
+                        addUsersToList(filas, jogadoresAtuais_SegundoPraFrente, False)
+
                     msgsLista += jogador.nome + " foi adicionado a lista! \n" 
             
             manageListTxtFile(filas)
@@ -343,7 +349,7 @@ def addUsersToList(filas, users):
 def qbgShuffleList(filas, shuffleOrReShuffle):
     try:
         listPlayersOnTop = []
-        if(shuffleOrReShuffle == -1 or shuffleOrReShuffle == 0):
+        if(shuffleOrReShuffle == numeros.DEFAULT_SHUFFLE or shuffleOrReShuffle == numeros.RESHUFFLE):
             for index, lista in enumerate(filas.groupList):
                 listPlayersOnTop.append(lista[shuffleOrReShuffle])
                 filas.groupList[index].remove(lista[shuffleOrReShuffle])
@@ -364,7 +370,7 @@ def qbgShuffleList(filas, shuffleOrReShuffle):
         addUsersToList(filas,allListPlayers)
 
         if(filas.isGroupListLocked):
-            toggleIsGroupListLocked(filas)
+            toggleIsGroupListLocked(filas, True)
 
         manageListTxtFile(filas)
         return showList(filas)

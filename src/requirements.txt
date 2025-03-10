@@ -1,5 +1,5 @@
 discord.py==2.3.2
-pyinstaller==5.13.2
-pyinstaller-hooks-contrib==2023.8
+pyinstaller==6.10.0
+pyinstaller-hooks-contrib
 tk==0.1.0
 requests
