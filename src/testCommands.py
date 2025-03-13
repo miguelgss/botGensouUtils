@@ -4,7 +4,7 @@ import commands
 from classes.jogador import Jogador
 from classes.filasMantenedor import FilasMantenedor
 
-FilaMock = FilasMantenedor
+FilaMock = FilasMantenedor()
 JogadoresMock = [Jogador("1","Vibago"), Jogador("2","Kujibiki"), Jogador("3", "Machii"), Jogador("4", "Decarabia")]
 FilaMock.groupList[0] = JogadoresMock.copy()
 
@@ -12,7 +12,6 @@ UsersInputAddMock = [Jogador("123", "Haggen"), Jogador("456", "Nicolante")]
 UsersInputRemoveMock = [Jogador("1", "Vibago")]
 
 class TestCommands(unittest.TestCase):
-
     def test_add(self):
         result = commands.addUsersToList(FilaMock, UsersInputAddMock)
         self.assertIn(UsersInputAddMock[0], FilaMock.groupList[0])

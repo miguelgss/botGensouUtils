@@ -7,7 +7,7 @@ import tkinter as tk
 import webbrowser
 
 # Importação de arquivos
-from responses import responses
+from requestsFila import RequestsFila
 from enums import Color, ErrorMessages, CommandNames
 from errors import ExpectedException
 
@@ -29,7 +29,7 @@ def check_need_update(v1:list, v2:list):
             return True
     return False
 
-def run_discord_bot():
+async def run_discord_bot(requestsFila: RequestsFila):
 
     roles = getValidRoles() 
 
@@ -125,7 +125,7 @@ def run_discord_bot():
     async def Lista(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Lista[0]}",
-            description=responses.showListFormatted(),
+            description=requestsFila.showListFormatted(),
             color=Color.Sucesso.value)
         )
             
@@ -133,7 +133,7 @@ def run_discord_bot():
     async def AdicionaMe(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Adicioname[0]}",
-            description=responses.addAuthorToList(ctx),
+            description=requestsFila.addAuthorToList(ctx),
             color=Color.Sucesso.value)
         )
 
@@ -141,7 +141,7 @@ def run_discord_bot():
     async def RemoveMe(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Removeme[0]}",
-            description=responses.removeAuthorFromList(ctx),
+            description=requestsFila.removeAuthorFromList(ctx),
             color=Color.Sucesso.value)
         )
 
@@ -149,7 +149,7 @@ def run_discord_bot():
     @bot.command(aliases=CommandNames.BonsJogos)
     async def BonsJogos(ctx):
         await ctx.send(
-            responses.goodGames(ctx)
+            requestsFila.goodGames(ctx)
         )
     ### ---
 
@@ -159,7 +159,7 @@ def run_discord_bot():
     async def BloquearDesbloquear(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Bloquear[0]}",
-            description=responses.lockUnlockGroupList(),
+            description=requestsFila.lockUnlockGroupList(),
             color=Color.Sucesso.value)
         )
 
@@ -168,7 +168,7 @@ def run_discord_bot():
     async def HabilitaDesabilitaLoop(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Loop[0]}",
-            description=responses.loopUnloopLists(),
+            description=requestsFila.loopUnloopLists(),
             color=Color.Sucesso.value)
         )    
         
@@ -177,7 +177,7 @@ def run_discord_bot():
     async def Adiciona(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Adiciona[0]}",
-            description=responses.addNamesToList(ctx, users),
+            description=requestsFila.addNamesToList(ctx, users),
             color=Color.Sucesso.value)
         )
 
@@ -186,7 +186,7 @@ def run_discord_bot():
     async def AdicionaLista(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.AdicionaLista[0]}",
-            description=responses.addNewList(ctx, users),
+            description=requestsFila.addNewList(ctx, users),
             color=Color.Sucesso.value)
         )
         
@@ -195,7 +195,7 @@ def run_discord_bot():
     async def Remove(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Remove[0]}",
-            description=responses.removeNamesFromList(ctx, users),
+            description=requestsFila.removeNamesFromList(ctx, users),
             color=Color.Sucesso.value)
         )
         
@@ -204,7 +204,7 @@ def run_discord_bot():
     async def RemoveLista(ctx, number):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.RemoveLista[0]}",
-            description=responses.removeList(number),
+            description=requestsFila.removeList(number),
             color=Color.Sucesso.value)
         )
 
@@ -213,7 +213,7 @@ def run_discord_bot():
     async def Embaralha(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Embaralha[0]}",
-            description=responses.defaultShuffle(),
+            description=requestsFila.defaultShuffle(),
             color=Color.Sucesso.value)
         )
 
@@ -222,7 +222,7 @@ def run_discord_bot():
     async def Reembaralha(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Reembaralha[0]}",
-            description=responses.reShuffle(),
+            description=requestsFila.reShuffle(),
             color=Color.Sucesso.value)
         )
         
@@ -231,7 +231,7 @@ def run_discord_bot():
     async def EmbaralhaTodos(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.EmbaralhaTodos[0]}",
-            description=responses.shuffleEverything(),
+            description=requestsFila.shuffleEverything(),
             color=Color.Sucesso.value)
         )
 
@@ -240,7 +240,7 @@ def run_discord_bot():
     async def Separar(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Separar[0]}",
-            description=responses.splitList(ctx),
+            description=requestsFila.splitList(ctx),
             color=Color.Sucesso.value)
         )
 
@@ -249,7 +249,7 @@ def run_discord_bot():
     async def Move(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Move[0]}",
-            description=responses.movePosition(ctx),
+            description=requestsFila.movePosition(ctx),
             color=Color.Sucesso.value)
         )
 
@@ -258,7 +258,7 @@ def run_discord_bot():
     async def Trocar(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.Trocar[0]}",
-            description=responses.swapPosition(ctx),
+            description=requestsFila.swapPosition(ctx),
             color=Color.Sucesso.value)
         )
 
@@ -277,7 +277,7 @@ def run_discord_bot():
     @commands.has_any_role(*roles)
     async def IniciarLista(ctx, number = 0):
         await ctx.send(
-            responses.startList(number)
+            requestsFila.startList(number)
             )
 
     @bot.command(aliases=CommandNames.PararLista)
@@ -285,7 +285,7 @@ def run_discord_bot():
     async def PararLista(ctx):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.PararLista[0]}",
-            description=responses.stopList(),
+            description=requestsFila.stopList(),
             color=Color.Sucesso.value)
         )
 
@@ -293,7 +293,7 @@ def run_discord_bot():
     @commands.has_any_role(*roles)
     async def AvancarLista(ctx, number = 1):
         await ctx.send(
-            responses.skipMatch(number)
+            requestsFila.skipMatch(number)
         )
 
     @bot.command(aliases=CommandNames.MudarEstadoJogador)
@@ -301,7 +301,7 @@ def run_discord_bot():
     async def MudarEstadoJogador(ctx, *users: discord.Member):
         await ctx.send(
             embed=discord.Embed(title=f"{CommandNames.MudarEstadoJogador[0]}",
-            description=responses.togglePlayerStatus(users),
+            description=requestsFila.togglePlayerStatus(users),
             color=Color.Sucesso.value)
         )
     ###---
@@ -338,7 +338,7 @@ def run_discord_bot():
 
     # Inicia o bot
     try:
-        bot.run(TOKEN)
+        await bot.start(TOKEN)
     except Exception as e:
         if isinstance(e, discord.errors.LoginFailure):
             print(ErrorMessages.TokenIncorreto.value + "\n" + ErrorMessages.InvalidToken.value)

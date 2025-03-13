@@ -28,7 +28,7 @@ def showList(filas) -> str:
             if jogador.lutando:
                 textoLista += "**_" +str(posCount) + " -<@" + str(jogador.idJogador) + ">_**" + " 🥊 **LUTANDO!**" + "\n"
             else:
-                textoLista += str(posCount) + " - <@" + str(jogador.idJogador) + ">" + "; \n"
+                textoLista += str(posCount) + " - <@" + str(jogador.idJogador) + ">" + " 🛌; \n"
             posCount += 1
     
     if filas.isGroupListLocked:
