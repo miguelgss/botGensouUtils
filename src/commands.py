@@ -34,7 +34,7 @@ def showList(filas) -> str:
     if filas.isGroupListLocked:
         textoLista += "\n🕒 Lista de Espera: \n"
         for jogador in filas.waitList:
-            textoLista += jogador.nome + "; \n"
+            textoLista += jogador.nome + " 😴; \n"
 
     return textoLista
 
