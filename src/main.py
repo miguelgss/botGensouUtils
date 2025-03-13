@@ -10,22 +10,6 @@ from classes.jogador import Jogador
 Filas = FilasMantenedor()
 reqs = RequestsFila(Filas)
 
-ListaJogadoresSeparavel = [
-    Jogador("AliceSilva", "Alice Silva"),
-    Jogador("Buruno", "Bruno Santos"),
-    Jogador("Carola", "Carolina Oliveira"),
-    Jogador("Danizinha", "Daniel Souza"),
-    Jogador("Duda", "Eduarda Lima"),
-    Jogador("Felps", "Felipe Costa"),
-    Jogador("Gabys", "Gabriela Rocha"),
-    Jogador("Henriqs", "Henrique Mendes"),
-    Jogador("Izzys", "Isabela Fernandes"),
-    Jogador("Jonas", "João Pereira"),
-    Jogador("Karolina", "Karina Alves"),
-]
-
-reqs.addNamesToList(None, ListaJogadoresSeparavel)
-
 def run_bot(loop):
     asyncio.run_coroutine_threadsafe(bot.run_discord_bot(reqs), loop)
 

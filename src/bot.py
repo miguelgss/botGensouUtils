@@ -17,7 +17,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='{', intents=intents)
 bot.remove_command("help")
 
-v = [2, 4, 2]
+v = [2, 5, 0]
 
 def check_need_update(v1:list, v2:list):
     length = max(len(v1), len(v2))
