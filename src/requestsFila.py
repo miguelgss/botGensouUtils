@@ -89,7 +89,7 @@ class RequestsFila():
         return result
 
     def goodGames(self, ctx):
-        commands.advanceListStatus(self.Filas, ctx)
+        result = commands.advanceListStatus(self.Filas, ctx)
         self.Filas.notify_listeners()
         return result
 
