@@ -89,7 +89,7 @@ class RequestsFila():
         return result
 
     def goodGames(self, ctx):
-        result = commands.swapPositionFromList(self.Filas, self.handle_response_msg(ctx.message.content))
+        commands.advanceListStatus(self.Filas, ctx)
         self.Filas.notify_listeners()
         return result
 
