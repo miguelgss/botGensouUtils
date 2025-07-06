@@ -5,6 +5,8 @@ from discord.ext import commands
 import requests
 import tkinter as tk
 import webbrowser
+import os
+from datetime import datetime
 
 # Importação de arquivos
 from requestsFila import RequestsFila
@@ -32,6 +34,7 @@ def check_need_update(v1:list, v2:list):
 async def run_discord_bot(requestsFila: RequestsFila):
 
     roles = getValidRoles() 
+    adminRole = getValidAdminRole()
 
     TOKEN = ''
     with open('config.txt') as f:
@@ -273,6 +276,16 @@ async def run_discord_bot(requestsFila: RequestsFila):
                 messagesList.append(message)
         await ctx.channel.delete_messages(messagesList)
 
+    @bot.command(aliases=CommandNames.LimparTodos)
+    @commands.has_any_role(*adminRole)
+    async def ClearAll(ctx, number = 20):
+        messagesList = []
+        number = int(number) 
+
+        async for message in ctx.channel.history(limit=number):
+            messagesList.append(message)
+        await ctx.channel.delete_messages(messagesList)
+
     @bot.command(aliases=CommandNames.IniciarLista)
     @commands.has_any_role(*roles)
     async def IniciarLista(ctx, number = 0):
@@ -309,32 +322,53 @@ async def run_discord_bot(requestsFila: RequestsFila):
     ###--- HANDLER DE ERROS 
     @bot.event
     async def on_command_error(ctx, error):
-        print(error)
+        title = "⚠️ Alerta:"
+        errorMessage = ""
+        errorColor = Color.Alerta.value
         if isinstance(error, commands.errors.MissingAnyRole):
-            await ctx.send(
-                embed=discord.Embed(title="⚠️ Alerta:",
-                description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.SemPermissao.value,
-                color=Color.Alerta.value)
-            )
+            errorMessage=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n {ErrorMessages.SemPermissao.value} \n {error} \n\n OBS: Se a lista de roles estiver vazia, favor incluir as roles e adminRole no config.txt.'
+
         elif isinstance(error, commands.errors.CommandNotFound):
-            await ctx.send(
-                embed=discord.Embed(title="⚠️ Alerta:",
-                description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.ComandoNaoEncontrado.value,
-                color=Color.Alerta.value)
-            )
+            errorMessage=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.ComandoNaoEncontrado.value
+
         elif isinstance(error, commands.errors.MemberNotFound):
-            await ctx.send(
-                embed=discord.Embed(title="⚠️ Alerta:",
-                description=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.UsuarioNaoEncontrado.value,
-                color=Color.Alerta.value)
-            )
+            errorMessage=f'De: {ctx.message.author}; Comando: {ctx.message.content}; \n\n' + ErrorMessages.UsuarioNaoEncontrado.value
+
         else:
-            await ctx.send(
-                embed=discord.Embed(title="🚫 Erro:",
-                description=f'De: {ctx.message.author.name}; Comando: {ctx.message.content}; \n\n' + str(error),
-                color=Color.Erro.value)
-            )
+            title = "🚫 Erro:"
+            errorMessage = f'De: {ctx.message.author.name}; Comando: {ctx.message.content}; \n\n' + str(error)
+            errorColor = Color.Erro.value
+            
+        await ctx.send(
+            embed=discord.Embed(title=title,
+            description=errorMessage,
+            color=errorColor)
+        )
         print(str(error)) 
+
+        time_msg = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        log_message = (
+            f"{time_msg}\\\\"
+            f"{errorMessage}"
+        )
+        append_to_daily_log(log_message)
+
+    ###--- Registrar log básico de comandos
+    @bot.event
+    async def on_command(ctx):
+        command_name = ctx.command.name
+        author_name = ctx.author.display_name
+        guild_name = ctx.guild.name if ctx.guild else "Direct Message"
+        channel_name = ctx.channel.name if ctx.channel.name else "Direct Message"
+
+        time_msg = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        log_message = (
+            f"{time_msg}\\\\"
+            f"Comando '{command_name}' utilizado por '{author_name}' "
+            f"em: '{guild_name}' (Channel: '{channel_name}')"
+        )
+        print(log_message)
+        append_to_daily_log(log_message)
 
     # Inicia o bot
     try:
@@ -362,6 +396,21 @@ def getValidRoles():
     
     return retornoList
 
+def getValidAdminRole():
+    listRoles = []
+    retornoList = []
+
+    with open('config.txt') as f:   
+        for line in f:
+            if re.search("adminRole", line):
+                listRoles = line.split("=")
+                listRoles.pop(0)
+                for i in listRoles:
+                    roles = i.split(',')
+                    retornoList = list(map(str.strip, roles))
+    
+    return retornoList
+
 def checkRoles(userRoles, validRoles) -> bool:
     if(len(validRoles) == 0):
         return True
@@ -370,5 +419,27 @@ def checkRoles(userRoles, validRoles) -> bool:
             if(re.search(str(user).lower(),str(valid).lower())):
                 return True
     return False
+
+###---
+
+###--- Utilitário manipulação logs
+
+def append_to_daily_log(log_message: str, log_folder: str = "log"):
+    """
+    Append a log message to a daily log file inside the specified log folder.
+    The log file is named as YYYY-MM-DD.log based on the current date.
+
+    Args:
+        log_message (str): The message string to append to the log.
+        log_folder (str): The folder where log files are saved (default "log").
+    """
+    if not os.path.exists(log_folder):
+        os.makedirs(log_folder)
+    
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    log_file_path = os.path.join(log_folder, f"{today_str}.log")
+    
+    with open(log_file_path, "a", encoding="utf-8") as log_file:
+        log_file.write(log_message + "\n")
 
 ###---

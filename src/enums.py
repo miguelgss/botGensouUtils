@@ -48,6 +48,7 @@ class CommandNames(list, Enum):
     Bloquear = ['bloquear', 'b']
     Loop = ['loop']
     Limpar = ['limpar', 'clear', 'c']
+    LimparTodos = ['limpartodos', 'clearall', 'ca']
 
     BonsJogos = ['gg', 'ggs']
     AvancarLista = ['avançarlista', 'avançar', 'pular', 'skip']
@@ -81,7 +82,8 @@ class CommandNames(list, Enum):
         "Exemplo: t 1 1 2 1 trocará as posições entre lista1-primeiroNome e lista2-primeiroNome;",
         f"**{Bloquear}** - Bloqueia/desbloqueia as listas. Quando bloqueado, cria a lista de espera. Quando desbloqueado, adiciona a lista os nomes em espera;",
         f"**{Loop}** - Loopa/remove o loop das listas. Enquanto estiver loopando, o último jogador irá enfrentar o primeiro;",
-        f"**{Limpar}** (Opcional - __N__) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
+        f"**{Limpar}** (Opcional - __N__) (padrão: 20) - Limpa as mensagens mais recentes do bot. O 'N' especifica o número de mensagens para apagar, caso necessário;",
+        f"**{LimparTodos}** (Opcional - __N__) (padrão: 20) - **CUIDADO: LIMPA AS MENSAGENS MAIS RECENTES**. O 'N' especifica o número de mensagens para apagar, caso necessário;",
         f"**{IniciarLista}** (Opcional - __N__) - Começa a(s) lista(s), atualizando os primeiros de cada lista para o estado de 'LUTANDO!'. **É possível especificar a lista individualmente a ser iniciada**.",
         f"**{PararLista}** - Para a(s) lista(s), removendo o estado de 'LUTANDO!' de qualquer jogador que o tenha;",
         f"**{AvancarLista}** (Opcional - __NumeroLista__) - Avança a lista especificada. Caso nenhum número seja passado, o comando avançará a primeira lista.",

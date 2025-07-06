@@ -6,3 +6,4 @@ specs
 !requirements.txt
 venv
 gensou-venv
+log
